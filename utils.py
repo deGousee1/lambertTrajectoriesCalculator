@@ -23,4 +23,6 @@ def get_planet_id(planetname):
         planetid = 899
     if planetname == "Pluto":
         planetid = 999
+    if planetname == "Voyager 1": #A taki easter egg ;)
+        planetid = -31
     return planetid
