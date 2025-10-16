@@ -19,7 +19,7 @@ def get_planet_id(planetname):
         planetid = 699
     if planetname == "Uranus":
         planetid = 799
-    if planetname == "Neptun":
+    if planetname == "Neptune":
         planetid = 899
     if planetname == "Pluto":
         planetid = 999
