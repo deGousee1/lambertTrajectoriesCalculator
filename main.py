@@ -19,7 +19,7 @@ DAY = 86400
 
 
 from ephemerides import get_planet_vectors
-date = "2026-12-01"
+date = input("Date of departure (yyyy-mm-dd): ")
 date_julian = get_julian_date(date)
 
 planetname = input("First planet name: ")
@@ -42,6 +42,11 @@ v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
 total_v_first = np.linalg.norm(v_first)
 total_v_second = np.linalg.norm(v_second)
 
+r1_norm=np.linalg.norm(r_first)
+r2_norm=np.linalg.norm(r_second)
+angleEquation = np.dot(r_first, r_second) / (r1_norm * r2_norm)
+r1r2angle=np.arccos(angleEquation)
+
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
 print(planet1name, "position in meters:", r_first)
@@ -51,3 +56,4 @@ print(second_v)
 print(planet2name, "position in meters:", r_second)
 print(planet2name, "velocity in m/s:", v_second)
 print(planet2name, "total velocity in m/s:", total_v_second)
+print("Angle between", planet1name, "and", planetname,"relative to the Sun:", np.round(np.degrees(r1r2angle), 2),"°")
