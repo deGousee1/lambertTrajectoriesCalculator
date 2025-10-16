@@ -39,11 +39,15 @@ r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * AU
 v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
 v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
 
+total_v_first = np.linalg.norm(v_first)
+total_v_second = np.linalg.norm(v_second)
+
+print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
-print(second_v)
 print(planet1name, "position in meters:", r_first)
-print(planet2name, "position in meters:", r_second)
 print(planet1name, "velocity in m/s:", v_first)
+print(planet1name, "total velocity in m/s:", total_v_first)
+print(second_v)
+print(planet2name, "position in meters:", r_second)
 print(planet2name, "velocity in m/s:", v_second)
-print("UTC date:", date)
-print("Julian date:", date_julian)
+print(planet2name, "total velocity in m/s:", total_v_second)
