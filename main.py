@@ -22,13 +22,13 @@ from ephemerides import get_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
 date_julian = get_julian_date(date)
 
-planetname = input("First planet name: ")
-planet1name = planetname
-planet1id = get_planet_id(planetname)
+planetName = input("First planet name: ")
+planet1name = planetName
+planet1id = get_planet_id(planetName)
 
-planetname = input("Second planet name: ")
-planet2name = planetname
-planet2id = get_planet_id(planetname)
+planetName = input("Second planet name: ")
+planet2name = planetName
+planet2id = get_planet_id(planetName)
 
 first_v = get_planet_vectors(planet1id, date_julian)
 second_v = get_planet_vectors(planet2id, date_julian)
@@ -56,4 +56,4 @@ print(second_v)
 print(planet2name, "position in meters:", r_second)
 print(planet2name, "velocity in m/s:", v_second)
 print(planet2name, "total velocity in m/s:", total_v_second)
-print("Angle between", planet1name, "and", planetname,"relative to the Sun:", np.round(np.degrees(r1r2angle), 2),"°")
+print("Angle between", planet1name, "and", planetName, "relative to the Sun:", np.round(np.degrees(r1r2angle), 2), "°")
