@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/6016d196-61f5-480c-a552-f16984cf6cf0/console.sql" value="6016d196-61f5-480c-a552-f16984cf6cf0" />
+    <file url="file://$PROJECT_DIR$/db.py" value="af251fad-a7ca-4ae3-8cad-0d5556af87b1" />
+  </component>
+</project>
