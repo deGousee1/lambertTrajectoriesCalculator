@@ -7,16 +7,15 @@ from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
 import pandas as pd
+from lambert import get_ToF_estimate
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
-
-from utils import get_julian_date, get_planet_id
+from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time
 
 print("Library initialization completed successfully")
 
 AU = const.au.value
 DAY = 86400
-
 
 from ephemerides import get_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
@@ -47,6 +46,9 @@ r2_norm=np.linalg.norm(r_second)
 angleEquation = np.dot(r_first, r_second) / (r1_norm * r2_norm)
 r1r2angle=np.arccos(angleEquation)
 
+secondsToF = get_ToF_estimate(planet1name, planet2name)
+daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(secondsToF)
+
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
 print(planet1name, "position in meters:", r_first)
@@ -57,3 +59,4 @@ print(planet2name, "position in meters:", r_second)
 print(planet2name, "velocity in m/s:", v_second)
 print(planet2name, "total velocity in m/s:", total_v_second)
 print("Angle between", planet1name, "and", planetName, "relative to the Sun:", np.round(np.degrees(r1r2angle), 2), "°")
+print("Estimated time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")

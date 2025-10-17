@@ -19,5 +19,18 @@ for row in rows:
     id, name, mu, radius, semimajor_axis = row
     print(f"{id:<3} {name:<10} {mu:<15} {radius:<12} {semimajor_axis:<18}")
 
-# Zamknięcie połączenia
-conn.close()
+def get_planet_semimajor(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT semimajor_axis FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetsemimajor = cursor.fetchone()
+    conn.close()
+    return planetsemimajor[0]
+
+def get_planet_GM(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mu FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetGM = cursor.fetchone()
+    conn.close()
+    return planetGM[0]

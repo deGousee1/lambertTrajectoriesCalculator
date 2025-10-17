@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="SQLite database shenanigans v2">
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Added Sun to the database">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/celestial_bodies.db" beforeDir="false" afterPath="$PROJECT_DIR$/db/celestial_bodies.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambert.py" beforeDir="false" afterPath="$PROJECT_DIR$/lambert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +96,7 @@
       <option name="presentableId" value="Default" />
       <updated>1760630418416</updated>
       <workItem from="1760630452910" duration="21127000" />
-      <workItem from="1760710243060" duration="9430000" />
+      <workItem from="1760710243060" duration="15869000" />
     </task>
     <task id="LOCAL-00001" summary="main creation">
       <option name="closed" value="true" />
@@ -183,7 +186,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760719079675</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="SQLite further shenanigans">
+      <option name="closed" value="true" />
+      <created>1760719901379</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1760719901379</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Added Sun to the database">
+      <option name="closed" value="true" />
+      <created>1760721298044</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1760721298044</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -210,12 +229,14 @@
     <MESSAGE value="SQLite database added" />
     <MESSAGE value="SQLite database shenanigans" />
     <MESSAGE value="SQLite database shenanigans v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="SQLite database shenanigans v2" />
+    <MESSAGE value="SQLite further shenanigans" />
+    <MESSAGE value="Added Sun to the database" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Sun to the database" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760719329891" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760721243579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$ephemerides.coverage" NAME="ephemerides Coverage Results" MODIFIED="1760633421375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1760653808160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1760725810726" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

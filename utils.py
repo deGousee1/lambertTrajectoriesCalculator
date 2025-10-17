@@ -4,6 +4,15 @@ def get_julian_date(date_str: str) -> float:
     t=Time(date_str, scale='utc')
     return t.jd
 
+def get_Clear_ToF_Time(secondsToF):
+    daysToF = int(secondsToF // 86400)
+    secondsRemaining = secondsToF % 86400
+    hoursToF = int(secondsRemaining // 3600)
+    secondsRemaining %= 3600
+    minutesToF = int(secondsRemaining // 60)
+    secsToF = secondsRemaining % 60
+    return daysToF, hoursToF, minutesToF, secsToF
+
 def get_planet_id(planetname):
     if planetname == "Mercury":
         planetid = 199
