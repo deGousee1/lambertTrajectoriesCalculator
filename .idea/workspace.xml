@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Angle calculations added to main">
-      <change afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/af251fad-a7ca-4ae3-8cad-0d5556af87b1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/af251fad-a7ca-4ae3-8cad-0d5556af87b1.xml" afterDir="false" />
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="SQLite database shenanigans">
       <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,6 +71,10 @@
     "DatabaseDriversLRU": [
       "sqlite",
       "mysql"
+    ],
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL Dialect": [
+      "SQLite",
+      "MySQL"
     ]
   }
 }]]></component>
@@ -93,7 +94,7 @@
       <option name="presentableId" value="Default" />
       <updated>1760630418416</updated>
       <workItem from="1760630452910" duration="21127000" />
-      <workItem from="1760710243060" duration="7517000" />
+      <workItem from="1760710243060" duration="8562000" />
     </task>
     <task id="LOCAL-00001" summary="main creation">
       <option name="closed" value="true" />
@@ -159,7 +160,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760653832629</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="SQLite database added">
+      <option name="closed" value="true" />
+      <created>1760717919010</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1760717919010</updated>
+    </task>
+    <task id="LOCAL-00010" summary="SQLite database shenanigans">
+      <option name="closed" value="true" />
+      <created>1760718061698</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1760718061698</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -183,11 +200,13 @@
     <MESSAGE value="Neptune name bug fix" />
     <MESSAGE value="Total planet velocity added and reorganised output display" />
     <MESSAGE value="Angle calculations added to main" />
-    <option name="LAST_COMMIT_MESSAGE" value="Angle calculations added to main" />
+    <MESSAGE value="SQLite database added" />
+    <MESSAGE value="SQLite database shenanigans" />
+    <option name="LAST_COMMIT_MESSAGE" value="SQLite database shenanigans" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760717660982" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760718411643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$ephemerides.coverage" NAME="ephemerides Coverage Results" MODIFIED="1760633421375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1760653808160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
