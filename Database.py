@@ -21,6 +21,13 @@ def fetch_data_from_mysql():
             # Execute a SELECT query
             query = "SELECT name FROM celestial_bodies ORDER BY id;"
             cursor.execute(query)
+            records = cursor.fetchall()
+            print("Records fetched successfully:")
+            for row in records:
+                print(row)
+
+            query = "SELECT name, radius FROM celestial_bodies WHERE name = 'Earth';"
+            cursor.execute(query)
 
             # Fetch all the records from the query result
             records = cursor.fetchall()
