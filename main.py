@@ -7,7 +7,8 @@ from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
 import pandas as pd
-from lambert import get_ToF_estimate
+from lambert import get_ToF_estimate, get_Corrected_ToF_estimate
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
 from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time
@@ -46,8 +47,12 @@ r2_norm=np.linalg.norm(r_second)
 angleEquation = np.dot(r_first, r_second) / (r1_norm * r2_norm)
 r1r2angle=np.arccos(angleEquation)
 
-secondsToF = get_ToF_estimate(planet1name, planet2name)
-daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(secondsToF)
+secondsToF = get_ToF_estimate(planet2name, r1_norm)
+ToFdays = secondsToF/86400
+JulianArrivalETA = ToFdays + date_julian
+correctedToF = get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2id)
+#correctedToF = secondsToF eliminuje drugi stopień obliczeń
+daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF)
 
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
