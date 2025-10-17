@@ -19,7 +19,7 @@ def fetch_data_from_mysql():
             cursor = connection.cursor()
 
             # Execute a SELECT query
-            query = "SELECT name FROM celestial_bodies;"
+            query = "SELECT name FROM celestial_bodies ORDER BY id;"
             cursor.execute(query)
 
             # Fetch all the records from the query result
