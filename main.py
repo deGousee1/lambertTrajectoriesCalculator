@@ -7,7 +7,7 @@ from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
 import pandas as pd
-from lambert import get_ToF_estimate, get_Corrected_ToF_estimate
+from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
@@ -44,8 +44,7 @@ total_v_second = np.linalg.norm(v_second)
 
 r1_norm=np.linalg.norm(r_first)
 r2_norm=np.linalg.norm(r_second)
-angleEquation = np.dot(r_first, r_second) / (r1_norm * r2_norm)
-r1r2angle=np.arccos(angleEquation)
+r1r2angle = np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm))
 
 secondsToF = get_ToF_estimate(planet2name, r1_norm)
 ToFdays = secondsToF/86400
@@ -53,6 +52,11 @@ JulianArrivalETA = ToFdays + date_julian
 correctedToF = get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2id)
 #correctedToF = secondsToF eliminuje drugi stopień obliczeń
 daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF)
+correctedToFdays = correctedToF/86400
+JulianArrivalCorrected = correctedToFdays + date_julian
+v1, v2 = get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF)
+v1_norm = np.linalg.norm(v1)
+v2_norm = np.linalg.norm(v2)
 
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
@@ -65,3 +69,5 @@ print(planet2name, "velocity in m/s:", v_second)
 print(planet2name, "total velocity in m/s:", total_v_second)
 print("Angle between", planet1name, "and", planetName, "relative to the Sun:", np.round(np.degrees(r1r2angle), 2), "°")
 print("Estimated time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")
+print("V1:", v1, "V2:", v2)
+print("V1 norm:", v1_norm, "V2 norm:", v2_norm)

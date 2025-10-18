@@ -1,7 +1,10 @@
 import numpy as np
 from astropy import constants as const
+from scipy.spatial.distance import kulczynski1
+
 from db import get_planet_semimajor, get_planet_GM
 from ephemerides import get_planet_vectors
+from utils import stumpff_C, stumpff_S
 
 AU = const.au.value
 
@@ -29,3 +32,60 @@ def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2
     print(first_v) #Tymczasowo do debugowania
     print(second_v) #Tymczasodo do debugowania
     return correctedToF
+
+def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF):
+    #Zdobycie wektorów
+    origin_vec = get_planet_vectors(planet1id, date_julian)
+    dest_vec = get_planet_vectors(planet2id, JulianArrivalCorrected)
+    pos_origin = np.array(origin_vec[["x", "y", "z"]].iloc[0]) * AU
+    pos_dest = np.array(dest_vec[["x", "y", "z"]].iloc[0]) * AU
+    r1_norm = np.linalg.norm(pos_origin)
+    r2_norm = np.linalg.norm(pos_dest)
+    #Zdobycie parametru grawitacyjnego słońca
+    planetName = "Sun"
+    sunGM = get_planet_GM(planetName)
+    #Obliczenie kąta między wektorami
+    theta = np.arccos(np.dot(pos_origin, pos_dest) / (r1_norm * r2_norm))
+    A = np.sin(theta) * np.sqrt( (r1_norm * r2_norm) / (1 - np.cos(theta)) )
+    print ("Parametr A:", A) #Tymczasowo do debugowania
+    ToFLambert = 1
+    yz=2
+    #z=9.1526593
+    z=10
+    licznikIteracji=0
+    k1 = 100
+    k2 = 100
+    #while abs(correctedToF - ToFLambert) > 0.001:
+       # if correctedToF - ToFLambert < 0:
+          #  z-=1e-12*correctedToF - ToFLambert
+        #else:
+         #   z += 1e-12 * correctedToF - ToFLambert
+
+    while abs(correctedToF - ToFLambert) > 0.001:
+        #z = z - 0.0000000000001
+        #yz = r1_norm+r2_norm(A*(z* stumpff_S(z) -1) / (np.sqrt( stumpff_C(z) )))
+        #ToFLambert = ((yz ** 1.5)/stumpff_C(z)) * stumpff_S(z) + A * np.sqrt(yz/sunGM)
+        #z -= 1e-12
+        if correctedToF - ToFLambert < 0:
+            z+=1e-12 * (correctedToF - ToFLambert)*k1
+        else:
+            z -= 1e-12 * (correctedToF - ToFLambert)*k2
+        if z > 10:
+            k1 = k1 / 10
+            k2 = k2 / 10
+
+        Cz = stumpff_C(z)
+        Sz = stumpff_S(z)
+        yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
+        ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
+        licznikIteracji += 1
+        print("Licznik:", licznikIteracji, "Różnica:", correctedToF - ToFLambert, "Z", z)
+
+    f=1 - (yz / r1_norm)
+    #g = np.sqrt(yz ** 3 / sunGM)  # zamiast A*sqrt(y/mu)
+    g = A * np.sqrt(yz/sunGM)
+    gp = 1-(yz/r2_norm)
+    v1=(1/g)*(pos_dest-(f*pos_origin))
+    v2=(1/g)*(gp*pos_dest-pos_origin)
+    print("Licznik iteracji:", licznikIteracji)
+    return v1, v2

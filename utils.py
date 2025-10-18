@@ -1,3 +1,4 @@
+import numpy as np
 from astropy.time import Time
 
 def get_julian_date(date_str: str) -> float:
@@ -12,6 +13,22 @@ def get_Clear_ToF_Time(correctedToF):
     minutesToF = int(secondsRemaining // 60)
     secsToF = secondsRemaining % 60
     return daysToF, hoursToF, minutesToF, secsToF
+
+def stumpff_C(z):
+    if z > 0:
+        return (1 - np.cos(np.sqrt(z))) / z
+    elif z < 0:
+        return (np.cosh(np.sqrt(-z)) - 1) / (-z)
+    else:
+        return 1/2
+
+def stumpff_S(z):
+    if z > 0:
+        return (np.sqrt(z) - np.sin(np.sqrt(z))) / (np.sqrt(z)**3)
+    elif z < 0:
+        return (np.sinh(np.sqrt(-z)) - np.sqrt(-z)) / (np.sqrt(-z)**3)
+    else:
+        return 1/6
 
 def get_planet_id(planetname):
     if planetname == "Mercury":
