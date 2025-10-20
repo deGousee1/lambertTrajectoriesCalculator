@@ -7,7 +7,8 @@ from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
 import pandas as pd
-from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV
+from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, get_vInfinity, get_orbSpeed, \
+    get_Peri_Speed
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
@@ -29,6 +30,9 @@ planet1id = get_planet_id(planetName)
 planetName = input("Second planet name: ")
 planet2name = planetName
 planet2id = get_planet_id(planetName)
+
+departOrbitHeight: float = input("Departure Orbit Height (m): ")
+arrivalOrbitHeight: float = input("Arrival Orbit Height (m): ")
 
 first_v = get_planet_vectors(planet1id, date_julian)
 second_v = get_planet_vectors(planet2id, date_julian)
@@ -58,6 +62,35 @@ v1, v2 = get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, pla
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
 
+v_arrivalSecond = get_planet_vectors(planet2id, JulianArrivalCorrected)
+v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+
+planetVector = v_first
+shipVector = v1
+vInfinityDepart = get_vInfinity(planetVector, shipVector)
+planetVector = v_arrivalSecond
+shipVector = v2
+vInfinityArrival = get_vInfinity(planetVector, shipVector)
+
+planetName = planet1name
+orbitHeight = float(departOrbitHeight)
+departOrbitSpeed = get_orbSpeed(orbitHeight, planetName)
+planetName = planet2name
+orbitHeight = float(arrivalOrbitHeight)
+arrivalOrbitSpeed = get_orbSpeed(orbitHeight, planetName)
+
+planetName = planet1name
+orbitHeight = float(departOrbitHeight)
+vInfinity = vInfinityDepart
+departPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
+planetName = planet2name
+orbitHeight = float(arrivalOrbitHeight)
+vInfinity = vInfinityArrival
+arrivalPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
+
+departDeltaV = (departPeriSpeed - departOrbitSpeed)
+arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
+
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
 print(planet1name, "position in meters:", r_first)
@@ -71,3 +104,6 @@ print("Angle between", planet1name, "and", planetName, "relative to the Sun:", n
 print("Estimated time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")
 print("V1:", v1, "V2:", v2)
 print("V1 norm:", v1_norm, "V2 norm:", v2_norm)
+print("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
+print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight, "meters:", np.round(np.linalg.norm(departDeltaV), 1), "m/s")
+print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight, "meters:", np.round(np.linalg.norm(arrivalDeltaV), 1) ,"m/s")

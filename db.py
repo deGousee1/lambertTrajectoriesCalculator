@@ -34,3 +34,11 @@ def get_planet_GM(planetName):
     planetGM = cursor.fetchone()
     conn.close()
     return planetGM[0]
+
+def get_planet_Radius(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT radius FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetRadius = cursor.fetchone()
+    conn.close()
+    return planetRadius[0]

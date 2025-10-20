@@ -2,7 +2,7 @@ import numpy as np
 from astropy import constants as const
 from scipy.spatial.distance import kulczynski1
 
-from db import get_planet_semimajor, get_planet_GM
+from db import get_planet_semimajor, get_planet_GM, get_planet_Radius
 from ephemerides import get_planet_vectors
 from utils import stumpff_C, stumpff_S
 
@@ -55,11 +55,6 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     licznikIteracji=0
     k1 = 100
     k2 = 100
-    #while abs(correctedToF - ToFLambert) > 0.001:
-       # if correctedToF - ToFLambert < 0:
-          #  z-=1e-12*correctedToF - ToFLambert
-        #else:
-         #   z += 1e-12 * correctedToF - ToFLambert
 
     while abs(correctedToF - ToFLambert) > 0.001:
         #z = z - 0.0000000000001
@@ -88,4 +83,25 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     v1=(1/g)*(pos_dest-(f*pos_origin))
     v2=(1/g)*(gp*pos_dest-pos_origin)
     print("Licznik iteracji:", licznikIteracji)
+    print("Theta:", theta)
     return v1, v2
+
+#def get_vInfinity(planetVector,shipVector):
+ #   vInfinity = shipVector - planetVector
+  #  return vInfinity
+def get_vInfinity(planetVector, shipVector):
+    # wektor nadwyżki względem planety
+    vInfinity = shipVector - planetVector
+    return vInfinity
+
+def get_orbSpeed(orbitHeight, planetName):
+    planetRadius = get_planet_Radius(planetName)
+    planetGM = get_planet_GM(planetName)
+    orbitSpeed = np.sqrt(planetGM/(orbitHeight+planetRadius))
+    return orbitSpeed
+
+def get_Peri_Speed(orbitHeight, planetName, vInfinity):
+    planetRadius = get_planet_Radius(planetName)
+    planetGM = get_planet_GM(planetName)
+    periSpeed = np.sqrt(np.linalg.norm(vInfinity)**2 + 2*planetGM/(planetRadius+orbitHeight))
+    return periSpeed
