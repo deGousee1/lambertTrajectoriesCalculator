@@ -12,7 +12,7 @@ from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, 
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
-from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time
+from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, debug_vectors
 
 print("Library initialization completed successfully")
 
@@ -21,18 +21,24 @@ DAY = 86400
 
 from ephemerides import get_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
+#date = "2025-06-15"
 date_julian = get_julian_date(date)
 
 planetName = input("First planet name: ")
+#planetName = "Earth"
 planet1name = planetName
 planet1id = get_planet_id(planetName)
 
 planetName = input("Second planet name: ")
+#planetName = "Jupiter"
 planet2name = planetName
 planet2id = get_planet_id(planetName)
 
-departOrbitHeight: float = input("Departure Orbit Height (m): ")
-arrivalOrbitHeight: float = input("Arrival Orbit Height (m): ")
+departOrbitHeight = float(input("Departure Orbit Height (km): "))*1000
+arrivalOrbitHeight = float(input("Arrival Orbit Height (km): "))*1000
+
+#departOrbitHeight = 200000
+#arrivalOrbitHeight = 2000000
 
 first_v = get_planet_vectors(planet1id, date_julian)
 second_v = get_planet_vectors(planet2id, date_julian)
@@ -90,6 +96,8 @@ arrivalPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
 
 departDeltaV = (departPeriSpeed - departOrbitSpeed)
 arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
+debug_vectors(v_first, v1, r_first, "departure")
+debug_vectors(v_arrivalSecond, v2, r_second, "arrival")
 
 print("UTC date:", date, "Julian date:", date_julian)
 print(first_v)
@@ -107,3 +115,7 @@ print("V1 norm:", v1_norm, "V2 norm:", v2_norm)
 print("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
 print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight, "meters:", np.round(np.linalg.norm(departDeltaV), 1), "m/s")
 print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight, "meters:", np.round(np.linalg.norm(arrivalDeltaV), 1) ,"m/s")
+#print("Departure peri speed:", departOrbitSpeed, "Arrival peri speed:", arrivalOrbitSpeed)
+#print("V infinity departure:", vInfinityDepart, "V infinity arrival:", vInfinityArrival)
+#print(v1_norm - (total_v_first + departOrbitSpeed), "m/s transfer burn")
+#print(v2_norm - (total_v_second + arrivalOrbitSpeed), "m/s capture burn")

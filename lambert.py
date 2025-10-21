@@ -7,6 +7,7 @@ from ephemerides import get_planet_vectors
 from utils import stumpff_C, stumpff_S
 
 AU = const.au.value
+DAY = 86400
 
 
 def get_ToF_estimate(planet2name, r1_norm):
@@ -39,6 +40,9 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     dest_vec = get_planet_vectors(planet2id, JulianArrivalCorrected)
     pos_origin = np.array(origin_vec[["x", "y", "z"]].iloc[0]) * AU
     pos_dest = np.array(dest_vec[["x", "y", "z"]].iloc[0]) * AU
+    #Wektor prędkosci planety docelowej dla sprawdzenia rozwiązania long way
+    v_dest = np.array(dest_vec[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
+
     r1_norm = np.linalg.norm(pos_origin)
     r2_norm = np.linalg.norm(pos_dest)
     #Zdobycie parametru grawitacyjnego słońca
@@ -48,42 +52,55 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     theta = np.arccos(np.dot(pos_origin, pos_dest) / (r1_norm * r2_norm))
     A = np.sin(theta) * np.sqrt( (r1_norm * r2_norm) / (1 - np.cos(theta)) )
     print ("Parametr A:", A) #Tymczasowo do debugowania
-    ToFLambert = 1
-    yz=2
     #z=9.1526593
-    z=10
+    ToFLambert = 1
+    yz = 2
+    z=0
     licznikIteracji=0
     k1 = 100
     k2 = 100
+    short_way_done = False
+    while not short_way_done:
+        z=0
+        while abs(correctedToF - ToFLambert) > 0.001:
+            #z = z - 0.0000000000001
+            #yz = r1_norm+r2_norm(A*(z* stumpff_S(z) -1) / (np.sqrt( stumpff_C(z) )))
+            #ToFLambert = ((yz ** 1.5)/stumpff_C(z)) * stumpff_S(z) + A * np.sqrt(yz/sunGM)
+            #z -= 1e-12
+            if correctedToF - ToFLambert < 0:
+                z -=1e-12 * (correctedToF - ToFLambert)*k1
+            else:
+                z += 1e-12 * (correctedToF - ToFLambert)*k2
+            if z > 10:
+                k1 = k1 / 10
+                k2 = k2 / 10
 
-    while abs(correctedToF - ToFLambert) > 0.001:
-        #z = z - 0.0000000000001
-        #yz = r1_norm+r2_norm(A*(z* stumpff_S(z) -1) / (np.sqrt( stumpff_C(z) )))
-        #ToFLambert = ((yz ** 1.5)/stumpff_C(z)) * stumpff_S(z) + A * np.sqrt(yz/sunGM)
-        #z -= 1e-12
-        if correctedToF - ToFLambert < 0:
-            z+=1e-12 * (correctedToF - ToFLambert)*k1
+            Cz = stumpff_C(z)
+            Sz = stumpff_S(z)
+            yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
+            ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
+            licznikIteracji += 1
+            print("Licznik:", licznikIteracji, "Różnica:", correctedToF - ToFLambert, "Z", z)
+
+        f=1 - (yz / r1_norm)
+        #g = np.sqrt(yz ** 3 / sunGM)  # zamiast A*sqrt(y/mu)
+        g = A * np.sqrt(yz/sunGM)
+        gp = 1-(yz/r2_norm)
+        v1=(1/g)*(pos_dest-(f*pos_origin))
+        v2=(1/g)*(gp*pos_dest-pos_origin)
+
+        # Sprawdzamy faktyczny kierunek trajektorii
+        angle = np.arccos(np.dot(v2, v_dest) / (np.linalg.norm(v2)*np.linalg.norm(v_dest)))
+        if angle > np.pi/2:
+            # long-way wykryty → odwróć A i powtórz iterację po Z
+            A = -A
+            continue
         else:
-            z -= 1e-12 * (correctedToF - ToFLambert)*k2
-        if z > 10:
-            k1 = k1 / 10
-            k2 = k2 / 10
-
-        Cz = stumpff_C(z)
-        Sz = stumpff_S(z)
-        yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
-        ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
-        licznikIteracji += 1
-        print("Licznik:", licznikIteracji, "Różnica:", correctedToF - ToFLambert, "Z", z)
-
-    f=1 - (yz / r1_norm)
-    #g = np.sqrt(yz ** 3 / sunGM)  # zamiast A*sqrt(y/mu)
-    g = A * np.sqrt(yz/sunGM)
-    gp = 1-(yz/r2_norm)
-    v1=(1/g)*(pos_dest-(f*pos_origin))
-    v2=(1/g)*(gp*pos_dest-pos_origin)
+            short_way_done = True
     print("Licznik iteracji:", licznikIteracji)
     print("Theta:", theta)
+    print("Parametr A:", A)  # Tymczasowo do debugowania
+    print("Parametr Z:", z)  # Tymczasowo do debugowania
     return v1, v2
 
 #def get_vInfinity(planetVector,shipVector):
