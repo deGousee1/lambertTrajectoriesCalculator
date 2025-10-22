@@ -1,9 +1,16 @@
 import numpy as np
 from astropy.time import Time
+import warnings
+from erfa import ErfaWarning
+warnings.filterwarnings('ignore', category=ErfaWarning)
 
 def get_julian_date(date_str: str) -> float:
     t=Time(date_str, scale='utc')
     return t.jd
+
+def julian_to_utc(jd: float) -> str:
+    t = Time(jd, format='jd', scale='utc')
+    return t.utc.iso.split(" ")[0]
 
 def get_Clear_ToF_Time(correctedToF):
     daysToF = int(correctedToF // 86400)
@@ -52,22 +59,3 @@ def get_planet_id(planetname):
     if planetname == "Voyager 1": #A taki easter egg ;)
         planetid = -31
     return planetid
-
-def debug_vectors(v_planet, v_ship, r_planet, label=""):
-    v_planet = np.array(v_planet)
-    v_ship = np.array(v_ship)
-    Vinf_vec = v_ship - v_planet
-    norm_vp = np.linalg.norm(v_planet)
-    norm_vs = np.linalg.norm(v_ship)
-    norm_vinf = np.linalg.norm(Vinf_vec)
-    cosang = np.dot(v_planet, v_ship) / (norm_vp * norm_vs)
-    cosang = np.clip(cosang, -1.0, 1.0)
-    ang_deg = np.degrees(np.arccos(cosang))
-    print(f"--- DEBUG {label} ---")
-    print("v_planet (m/s)    :", v_planet, "||", norm_vp, "m/s")
-    print("v_ship  (m/s)     :", v_ship,  "||", norm_vs, "m/s")
-    print("V_inf (ship-planet):", Vinf_vec, "||", norm_vinf, "m/s")
-    print("angle between v_planet and v_ship:", np.round(ang_deg,2), "deg")
-    # sanity:
-    print("sanity: |v_ship| approx |v_planet| +/- |Vinf|? ->", np.round(norm_vs,3), "~", np.round(norm_vp + norm_vinf,3))
-    print("-------------------------\n")

@@ -12,9 +12,7 @@ from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, 
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
-from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, debug_vectors
-
-print("Library initialization completed successfully")
+from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, julian_to_utc
 
 AU = const.au.value
 DAY = 86400
@@ -96,26 +94,24 @@ arrivalPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
 
 departDeltaV = (departPeriSpeed - departOrbitSpeed)
 arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
-debug_vectors(v_first, v1, r_first, "departure")
-debug_vectors(v_arrivalSecond, v2, r_second, "arrival")
 
-print("UTC date:", date, "Julian date:", date_julian)
-print(first_v)
-print(planet1name, "position in meters:", r_first)
-print(planet1name, "velocity in m/s:", v_first)
-print(planet1name, "total velocity in m/s:", total_v_first)
-print(second_v)
-print(planet2name, "position in meters:", r_second)
-print(planet2name, "velocity in m/s:", v_second)
-print(planet2name, "total velocity in m/s:", total_v_second)
-print("Angle between", planet1name, "and", planetName, "relative to the Sun:", np.round(np.degrees(r1r2angle), 2), "°")
-print("Estimated time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")
-print("V1:", v1, "V2:", v2)
-print("V1 norm:", v1_norm, "V2 norm:", v2_norm)
-print("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
-print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight, "meters:", np.round(np.linalg.norm(departDeltaV), 1), "m/s")
-print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight, "meters:", np.round(np.linalg.norm(arrivalDeltaV), 1) ,"m/s")
-#print("Departure peri speed:", departOrbitSpeed, "Arrival peri speed:", arrivalOrbitSpeed)
-#print("V infinity departure:", vInfinityDepart, "V infinity arrival:", vInfinityArrival)
-#print(v1_norm - (total_v_first + departOrbitSpeed), "m/s transfer burn")
-#print(v2_norm - (total_v_second + arrivalOrbitSpeed), "m/s capture burn")
+jd = correctedToFdays + date_julian
+arrivalDate = julian_to_utc(jd)
+
+print("Angle between", planet1name, "and", planetName, "relative to the Sun at departure:", np.round(np.degrees(r1r2angle), 2), "°")
+print("UTC departure date:", date, "Julian departure date:", date_julian)
+#print(first_v)
+#print(planet1name, "position in meters:", r_first)
+#print(planet1name, "velocity in m/s:", v_first)
+#print(planet1name, "total velocity in m/s:", total_v_first)
+#print(second_v)
+#print(planet2name, "position in meters:", r_second)
+#print(planet2name, "velocity in m/s:", v_second)
+#print(planet2name, "total velocity in m/s:", total_v_second)
+print("Time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")
+print("UTC arrival date:", arrivalDate, "Julian arrival date:", np.round(jd, 1))
+#print("V1:", v1, "V2:", v2)
+#print("V1 norm:", v1_norm, "V2 norm:", v2_norm)
+#("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
+print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight/1000, "km:", np.round(np.linalg.norm(departDeltaV), 1), "m/s")
+print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight/1000, "km:", np.round(np.linalg.norm(arrivalDeltaV), 1) ,"m/s")

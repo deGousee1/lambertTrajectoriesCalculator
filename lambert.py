@@ -1,7 +1,8 @@
 import numpy as np
 from astropy import constants as const
 from scipy.spatial.distance import kulczynski1
-
+from tqdm import tqdm
+import sys
 from db import get_planet_semimajor, get_planet_GM, get_planet_Radius
 from ephemerides import get_planet_vectors
 from utils import stumpff_C, stumpff_S
@@ -30,8 +31,6 @@ def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2
     planetName = "Sun"
     sunGM = get_planet_GM(planetName)
     correctedToF = np.pi * np.sqrt( ( ( (r1_norm + r2_norm) / 2 ) ** 3 ) / sunGM)
-    print(first_v) #Tymczasowo do debugowania
-    print(second_v) #Tymczasodo do debugowania
     return correctedToF
 
 def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF):
@@ -51,12 +50,10 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     #Obliczenie kąta między wektorami
     theta = np.arccos(np.dot(pos_origin, pos_dest) / (r1_norm * r2_norm))
     A = np.sin(theta) * np.sqrt( (r1_norm * r2_norm) / (1 - np.cos(theta)) )
-    print ("Parametr A:", A) #Tymczasowo do debugowania
     #z=9.1526593
     ToFLambert = 1
     yz = 2
-    z=0
-    licznikIteracji=0
+    IterationCounter=0
     k1 = 100
     k2 = 100
     short_way_done = False
@@ -71,16 +68,19 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
                 z -=1e-12 * (correctedToF - ToFLambert)*k1
             else:
                 z += 1e-12 * (correctedToF - ToFLambert)*k2
-            if z > 10:
+            if IterationCounter>1000000:
                 k1 = k1 / 10
                 k2 = k2 / 10
-
+                z=0
             Cz = stumpff_C(z)
             Sz = stumpff_S(z)
             yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
             ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
-            licznikIteracji += 1
-            print("Licznik:", licznikIteracji, "Różnica:", correctedToF - ToFLambert, "Z", z)
+            IterationCounter += 1
+            sys.stdout.write(
+                f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
+            )
+            sys.stdout.flush()
 
         f=1 - (yz / r1_norm)
         #g = np.sqrt(yz ** 3 / sunGM)  # zamiast A*sqrt(y/mu)
@@ -97,10 +97,8 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
             continue
         else:
             short_way_done = True
-    print("Licznik iteracji:", licznikIteracji)
-    print("Theta:", theta)
-    print("Parametr A:", A)  # Tymczasowo do debugowania
-    print("Parametr Z:", z)  # Tymczasowo do debugowania
+    print()
+    print("Lambert calculations done!")
     return v1, v2
 
 #def get_vInfinity(planetVector,shipVector):
