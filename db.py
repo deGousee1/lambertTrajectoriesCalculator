@@ -35,3 +35,11 @@ def get_planet_Radius(planetName):
     planetRadius = cursor.fetchone()
     conn.close()
     return planetRadius[0]
+
+def get_planet_orbPeriod(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT orbPeriod FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetOrbPeriod = cursor.fetchone()
+    conn.close()
+    return planetOrbPeriod[0]

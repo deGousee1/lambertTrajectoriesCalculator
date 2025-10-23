@@ -3,12 +3,14 @@ import scipy
 import numpy as np
 from astropy import units as u
 from astropy import constants as const
+from astropy.time import Time, TimeDelta
 from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
 import pandas as pd
+import matplotlib.pyplot as plt
 from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, get_vInfinity, get_orbSpeed, \
-    get_Peri_Speed
+    get_Peri_Speed, get_Optimal_Launch_Angle, get_Delta_V
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
@@ -62,9 +64,43 @@ correctedToF = get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1
 daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF)
 correctedToFdays = correctedToF/86400
 JulianArrivalCorrected = correctedToFdays + date_julian
+
+start_jd_array = np.arange(date_julian-50, date_julian+50, 2)
+tof_days_array = np.arange(correctedToFdays-50, correctedToFdays+50, 2)
+utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
+
+deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
+
+for i, tof in enumerate(tof_days_array):
+    for j, jd_start_val in enumerate(start_jd_array):
+        jd_arrival = jd_start_val + tof
+        v1, v2 = get_LambertV(
+            JulianArrivalCorrected=jd_arrival,
+            correctedToFdays=tof,
+            date_julian=jd_start_val,
+            planet1id=planet1id,
+            planet2id=planet2id,
+            correctedToF=tof * 86400
+        )
+        # wylicz deltaV na starcie i przylocie
+        jd_arrival = jd_start_val + tof
+        arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+                                                       , v1=v1
+                                                       , v2=v2
+                                                       , planet1name=planet1name
+                                                       , planet2name=planet2name
+                                                       , departOrbitHeight=departOrbitHeight
+                                                       , arrivalOrbitHeight=arrivalOrbitHeight
+                                                       , v_first=v_first
+                                                       , JulianArrivalCorrected=jd_arrival)
+        deltaV = departDeltaV# + arrivalDeltaV
+        deltaV_matrix[i, j] = deltaV
+
 v1, v2 = get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF)
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
+
+optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays))
 
 v_arrivalSecond = get_planet_vectors(planet2id, JulianArrivalCorrected)
 v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
@@ -98,7 +134,10 @@ arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
 jd = correctedToFdays + date_julian
 arrivalDate = julian_to_utc(jd)
 
+angleArr = np.degrees(np.arccos(np.dot(v2, v_arrivalSecond) / (np.linalg.norm(v2)*np.linalg.norm(v_arrivalSecond))))
+
 print("Angle between", planet1name, "and", planetName, "relative to the Sun at departure:", np.round(np.degrees(r1r2angle), 2), "°")
+print("Optimal launch angle:", np.round((optimalAngle), 2))
 print("UTC departure date:", date, "Julian departure date:", date_julian)
 #print(first_v)
 #print(planet1name, "position in meters:", r_first)
@@ -115,3 +154,31 @@ print("UTC arrival date:", arrivalDate, "Julian arrival date:", np.round(jd, 1))
 #("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
 print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight/1000, "km:", np.round(np.linalg.norm(departDeltaV), 1), "m/s")
 print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight/1000, "km:", np.round(np.linalg.norm(arrivalDeltaV), 1) ,"m/s")
+print("Angle at arrival:", angleArr, "°")
+if angleArr>20:
+    print("WARNING! Catastrophically inefficient trajectory! The launch date is most likely set far from the Hohmann transfer window!")
+elif angleArr>15:
+    print("Warning! Inefficient trajectory! The launch date may not be set during the perfect transfer window.")
+elif angleArr>5:
+    print("Warning! Slightly inefficient trajectory! The launch date may not be set during the perfect transfer window.")
+else:
+    print("Good Hohmann transfer found!")
+
+
+# wykres
+plt.figure(figsize=(10,6))
+X, Y = np.meshgrid(utc_dates, tof_days_array)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
+plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
+plt.colorbar(label='Delta-V [m/s]')
+plt.xlabel('Data startu')
+plt.ylabel('Czas lotu [dni]')
+plt.title('Porkchop plot')
+plt.show()
+min_idx = np.unravel_index(np.argmin(deltaV_matrix), deltaV_matrix.shape)
+i_min, j_min = min_idx
+best_tof = tof_days_array[i_min]
+jd = float(start_jd_array[j_min])
+utcBestLaunch = julian_to_utc(jd)
+best_deltaV = deltaV_matrix[i_min, j_min]
+print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)

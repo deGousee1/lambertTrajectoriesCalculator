@@ -3,7 +3,7 @@ from astropy import constants as const
 from scipy.spatial.distance import kulczynski1
 from tqdm import tqdm
 import sys
-from db import get_planet_semimajor, get_planet_GM, get_planet_Radius
+from db import get_planet_semimajor, get_planet_GM, get_planet_Radius, get_planet_orbPeriod
 from ephemerides import get_planet_vectors
 from utils import stumpff_C, stumpff_S
 
@@ -33,6 +33,14 @@ def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2
     correctedToF = np.pi * np.sqrt( ( ( (r1_norm + r2_norm) / 2 ) ** 3 ) / sunGM)
     return correctedToF
 
+def get_Optimal_Launch_Angle(planet2name, correctedToFdays):
+    planetName = planet2name
+    planet2orbPeriod = float(get_planet_orbPeriod(planetName))
+    omega=360/planet2orbPeriod
+    deltaPhi=omega*correctedToFdays
+    optimalAngle=180-deltaPhi
+    return optimalAngle
+
 def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF):
     #Zdobycie wektorów
     origin_vec = get_planet_vectors(planet1id, date_julian)
@@ -54,8 +62,8 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
     ToFLambert = 1
     yz = 2
     IterationCounter=0
-    k1 = 100
-    k2 = 100
+    k1 = 1000
+    k2 = 1000
     short_way_done = False
     while not short_way_done:
         z=0
@@ -69,8 +77,8 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
             else:
                 z += 1e-12 * (correctedToF - ToFLambert)*k2
             if IterationCounter>1000000:
-                k1 = k1 / 10
-                k2 = k2 / 10
+                #k1 = k1 / 10
+                #k2 = k2 / 10
                 z=0
             Cz = stumpff_C(z)
             Sz = stumpff_S(z)
@@ -120,3 +128,34 @@ def get_Peri_Speed(orbitHeight, planetName, vInfinity):
     planetGM = get_planet_GM(planetName)
     periSpeed = np.sqrt(np.linalg.norm(vInfinity)**2 + 2*planetGM/(planetRadius+orbitHeight))
     return periSpeed
+
+def get_Delta_V(planet2id, JulianArrivalCorrected, v_first, v1, v2, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight):
+    v_arrivalSecond = get_planet_vectors(planet2id, JulianArrivalCorrected)
+    v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+
+    planetVector = v_first
+    shipVector = v1
+    vInfinityDepart = get_vInfinity(planetVector, shipVector)
+    planetVector = v_arrivalSecond
+    shipVector = v2
+    vInfinityArrival = get_vInfinity(planetVector, shipVector)
+
+    planetName = planet1name
+    orbitHeight = float(departOrbitHeight)
+    departOrbitSpeed = get_orbSpeed(orbitHeight, planetName)
+    planetName = planet2name
+    orbitHeight = float(arrivalOrbitHeight)
+    arrivalOrbitSpeed = get_orbSpeed(orbitHeight, planetName)
+
+    planetName = planet1name
+    orbitHeight = float(departOrbitHeight)
+    vInfinity = vInfinityDepart
+    departPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
+    planetName = planet2name
+    orbitHeight = float(arrivalOrbitHeight)
+    vInfinity = vInfinityArrival
+    arrivalPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
+
+    departDeltaV = (departPeriSpeed - departOrbitSpeed)
+    arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
+    return departDeltaV, arrivalDeltaV
