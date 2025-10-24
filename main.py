@@ -1,7 +1,8 @@
+import sys
+
 import astroquery
 import scipy
 import time
-from tqdm import tqdm
 import numpy as np
 from astropy import units as u
 from astropy import constants as const
@@ -67,43 +68,56 @@ daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF)
 correctedToFdays = correctedToF/86400
 JulianArrivalCorrected = correctedToFdays + date_julian
 
-scanRange=40
-scanStep=4
+#v1, v2 = get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF)
+#arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+   #                                                    , v1
+  #                                                     , v2
+  #                                                     , planet1name
+  #                                                     , planet2name
+  #                                                     , departOrbitHeight
+ #                                                      , arrivalOrbitHeight
+ #                                                      , v_first
+#                                                       , JulianArrivalCorrected)
+#maxPorkValue=departOrbitHeight+2000
+
+scanRange=150
+scanStep=10
 start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
 tof_days_array = np.arange(correctedToFdays-scanRange, correctedToFdays+scanRange, scanStep)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
-
-rangeA: int=int(((scanRange/scanStep)*2)**2)
-progressBar = tqdm(total=int(rangeA), desc="Drawing the porkchop plot")
-
+firstLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
-for i in tqdm(range(0, rangeA), desc="Drawing the porkchop plot"):
-    for i, tof in enumerate(tof_days_array):
-        for j, jd_start_val in enumerate(start_jd_array):
-            jd_arrival = jd_start_val + tof
-            v1, v2 = get_LambertV(
-                JulianArrivalCorrected=jd_arrival,
-                correctedToFdays=tof,
-                date_julian=jd_start_val,
-                planet1id=planet1id,
-                planet2id=planet2id,
-                correctedToF=tof * 86400
-            )
-            #Obliczenia deltaV
-            jd_arrival = jd_start_val + tof
-            arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
-                                                           , v1=v1
-                                                           , v2=v2
-                                                           , planet1name=planet1name
-                                                           , planet2name=planet2name
-                                                           , departOrbitHeight=departOrbitHeight
-                                                           , arrivalOrbitHeight=arrivalOrbitHeight
-                                                           , v_first=v_first
-                                                           , JulianArrivalCorrected=jd_arrival)
-            deltaV = departDeltaV# + arrivalDeltaV
-            deltaV_matrix[i, j] = deltaV
-            progressBar.update(1)
+for i, tof in enumerate(tof_days_array):
+    for j, jd_start_val in enumerate(start_jd_array):
+        jd_arrival = jd_start_val + tof
+        v1, v2 = get_LambertV(
+            JulianArrivalCorrected=jd_arrival,
+            date_julian=jd_start_val,
+            planet1id=planet1id,
+            planet2id=planet2id,
+            correctedToF=tof * 86400
+        )
+        #Obliczenia deltaV
+        jd_arrival = jd_start_val + tof
+        arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+                                                       , v1=v1
+                                                       , v2=v2
+                                                       , planet1name=planet1name
+                                                       , planet2name=planet2name
+                                                       , departOrbitHeight=departOrbitHeight
+                                                       , arrivalOrbitHeight=arrivalOrbitHeight
+                                                       , v_first=v_first
+                                                       , JulianArrivalCorrected=jd_arrival)
+        deltaV = departDeltaV# + arrivalDeltaV
+        deltaV_matrix[i, j] = deltaV
+        firstLoopCounter += 1
+        sys.stdout.write(
+        f"\rPorkchop iteration progress: {firstLoopCounter} of 900"
+        )
+        sys.stdout.flush()
 
+print()
+print("First rough sieve porkchop graph done!")
 
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
@@ -122,41 +136,44 @@ utcBestLaunch = julian_to_utc(jd)
 best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
-scanRange=5
+scanRange=10
 scanStep=1
 start_jd_array = np.arange(jd-scanRange, jd+scanRange, scanStep)
 tof_days_array = np.arange(best_tof-scanRange, best_tof+scanRange, scanStep)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
-
-progressBar2 = tqdm(total=int(scanRange / scanStep), desc="Drawing the porkchop plot")
-
+secondLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
-for i in tqdm(range(0, (int(scanRange/scanStep)*2)**2), desc="Drawing the porkchop plot"):
-    for i, tof in enumerate(tof_days_array):
-        for j, jd_start_val in enumerate(start_jd_array):
-            jd_arrival = jd_start_val + tof
-            v1, v2 = get_LambertV(
-                JulianArrivalCorrected=jd_arrival,
-                correctedToFdays=tof,
-                date_julian=jd_start_val,
-                planet1id=planet1id,
-                planet2id=planet2id,
-                correctedToF=tof * 86400
-            )
-            #Obliczenia deltaV
-            jd_arrival = jd_start_val + tof
-            arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
-                                                           , v1=v1
-                                                           , v2=v2
-                                                           , planet1name=planet1name
-                                                           , planet2name=planet2name
-                                                           , departOrbitHeight=departOrbitHeight
-                                                           , arrivalOrbitHeight=arrivalOrbitHeight
-                                                           , v_first=v_first
-                                                           , JulianArrivalCorrected=jd_arrival)
-            deltaV = departDeltaV# + arrivalDeltaV
-            deltaV_matrix[i, j] = deltaV
-            progressBar2.update(1)
+for i, tof in enumerate(tof_days_array):
+    for j, jd_start_val in enumerate(start_jd_array):
+        jd_arrival = jd_start_val + tof
+        v1, v2 = get_LambertV(
+            JulianArrivalCorrected=jd_arrival,
+            date_julian=jd_start_val,
+            planet1id=planet1id,
+            planet2id=planet2id,
+            correctedToF=tof * 86400
+        )
+        #Obliczenia deltaV
+        jd_arrival = jd_start_val + tof
+        arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+                                                       , v1=v1
+                                                       , v2=v2
+                                                       , planet1name=planet1name
+                                                       , planet2name=planet2name
+                                                       , departOrbitHeight=departOrbitHeight
+                                                       , arrivalOrbitHeight=arrivalOrbitHeight
+                                                       , v_first=v_first
+                                                       , JulianArrivalCorrected=jd_arrival)
+        deltaV = departDeltaV# + arrivalDeltaV
+        deltaV_matrix[i, j] = deltaV
+        secondLoopCounter += 1
+        sys.stdout.write(
+            f"\rSecond porkchop iteration progress: {secondLoopCounter} of 400"
+        )
+        sys.stdout.flush()
+
+print()
+print("Second fine sieve porkchop graph done!")
 
 utc_labels = [d.strftime("%m-%d") for d in utc_dates]
 plt.figure(figsize=(10,6))
@@ -178,7 +195,7 @@ print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best
 
 JulianArrivalBest: float = float(best_tof) + jd
 
-v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, correctedToFdays=best_tof, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400)
+v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400)
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
 
@@ -219,7 +236,7 @@ arrivalPeriSpeed = get_Peri_Speed(orbitHeight, planetName, vInfinity)
 departDeltaV = (departPeriSpeed - departOrbitSpeed)
 arrivalDeltaV = (arrivalPeriSpeed - arrivalOrbitSpeed)
 
-arrivalDate = julian_to_utc(jd)
+arrivalDate = julian_to_utc(JulianArrivalBest)
 
 angleArr = np.degrees(np.arccos(np.dot(v2, v_arrivalSecond) / (np.linalg.norm(v2)*np.linalg.norm(v_arrivalSecond))))
 

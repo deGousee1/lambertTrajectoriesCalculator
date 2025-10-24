@@ -41,7 +41,7 @@ def get_Optimal_Launch_Angle(planet2name, correctedToFdays):
     optimalAngle=180-deltaPhi
     return optimalAngle
 
-def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1id, planet2id, correctedToF):
+def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF):
     #Zdobycie wektorów
     origin_vec = get_planet_vectors(planet1id, date_julian)
     dest_vec = get_planet_vectors(planet2id, JulianArrivalCorrected)
