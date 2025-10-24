@@ -85,10 +85,10 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
             yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
             ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
             IterationCounter += 1
-            sys.stdout.write(
-                f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
-            )
-            sys.stdout.flush()
+            #sys.stdout.write(
+                #f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
+            #)
+            #sys.stdout.flush()
 
         f=1 - (yz / r1_norm)
         #g = np.sqrt(yz ** 3 / sunGM)  # zamiast A*sqrt(y/mu)
@@ -105,8 +105,8 @@ def get_LambertV(JulianArrivalCorrected, correctedToFdays, date_julian, planet1i
             continue
         else:
             short_way_done = True
-    print()
-    print("Lambert calculations done!")
+    #print()
+    #print("Lambert calculations done!")
     return v1, v2
 
 #def get_vInfinity(planetVector,shipVector):
