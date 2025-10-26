@@ -86,7 +86,7 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
             ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
             IterationCounter += 1
             #sys.stdout.write(
-                #f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
+            #    f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
             #)
             #sys.stdout.flush()
 

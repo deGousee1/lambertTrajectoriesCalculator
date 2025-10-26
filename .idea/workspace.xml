@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Corrected the porkchop plot creation and adjusted date display. Still give the best results">
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Finnaly a working two step porkchop plot algorythm">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lambert.py" beforeDir="false" afterPath="$PROJECT_DIR$/lambert.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
@@ -107,7 +107,7 @@
       <workItem from="1761385033172" duration="1796000" />
       <workItem from="1761429310583" duration="3066000" />
       <workItem from="1761477654951" duration="8697000" />
-      <workItem from="1761500083580" duration="4927000" />
+      <workItem from="1761500083580" duration="11535000" />
     </task>
     <task id="LOCAL-00001" summary="main creation">
       <option name="closed" value="true" />
@@ -285,7 +285,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761486977788</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Finnaly a working two step porkchop plot algorythm">
+      <option name="closed" value="true" />
+      <created>1761505158214</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1761505158214</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -323,13 +331,14 @@
     <MESSAGE value="Work in progress double porkchop scan and progress bar (doesnt work yet)" />
     <MESSAGE value="Kind of working double porkchop scan and deleted progress bar" />
     <MESSAGE value="Corrected the porkchop plot creation and adjusted date display. Still give the best results" />
-    <option name="LAST_COMMIT_MESSAGE" value="Corrected the porkchop plot creation and adjusted date display. Still give the best results" />
+    <MESSAGE value="Finnaly a working two step porkchop plot algorythm" />
+    <option name="LAST_COMMIT_MESSAGE" value="Finnaly a working two step porkchop plot algorythm" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$lambert.coverage" NAME="lambert Coverage Results" MODIFIED="1761431231351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760721243579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$ephemerides.coverage" NAME="ephemerides Coverage Results" MODIFIED="1760633421375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1761504466155" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1761511335840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

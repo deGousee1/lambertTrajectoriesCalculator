@@ -1,5 +1,5 @@
 import sys
-
+#import spiceypy as spice
 import astroquery
 import scipy
 import time
@@ -21,6 +21,10 @@ from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, julian_to_
 
 AU = const.au.value
 DAY = 86400
+
+#spice.furnsh("de440s.bsp")
+#spice.furnsh("naif0012.tls")
+#spice.furnsh("pck00010.tpc")
 
 from ephemerides import get_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
@@ -83,7 +87,8 @@ JulianArrivalCorrected = correctedToFdays + date_julian
 scanRange=150
 scanStep=10
 start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
-tof_days_array = np.arange(correctedToFdays-scanRange*0.9, correctedToFdays+scanRange, scanStep)
+tof_days_array = np.arange(correctedToFdays-scanRange*0.5, correctedToFdays+scanRange, scanStep)
+iterationGoal = ((scanRange*2)/scanStep)*((((correctedToFdays+scanRange) - (correctedToFdays-scanRange*0.5))/scanStep))
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 firstLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
@@ -113,7 +118,7 @@ for i, tof in enumerate(tof_days_array):
         deltaV_matrix[i, j] = deltaV
         firstLoopCounter += 1
         sys.stdout.write(
-        f"\rPorkchop iteration progress: {firstLoopCounter} of 900"
+            f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
         )
         sys.stdout.flush()
 
@@ -145,6 +150,7 @@ scanRange=15
 scanStep=1
 start_jd_array = np.arange(jd-scanRange, jd+scanRange, scanStep)
 tof_days_array = np.arange(best_tof-scanRange, best_tof+scanRange, scanStep)
+iterationGoal = ((scanRange*2)/scanStep)**2
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 secondLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
@@ -174,7 +180,7 @@ for i, tof in enumerate(tof_days_array):
         deltaV_matrix[i, j] = deltaV
         secondLoopCounter += 1
         sys.stdout.write(
-            f"\rSecond porkchop iteration progress: {secondLoopCounter} of 900"
+            f"\rSecond porkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}"
         )
         sys.stdout.flush()
 
