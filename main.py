@@ -80,7 +80,7 @@ JulianArrivalCorrected = correctedToFdays + date_julian
 #                                                       , JulianArrivalCorrected)
 #maxPorkValue=departOrbitHeight+2000
 
-scanRange=150
+scanRange=100
 scanStep=10
 start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
 tof_days_array = np.arange(correctedToFdays-scanRange, correctedToFdays+scanRange, scanStep)
@@ -99,7 +99,7 @@ for i, tof in enumerate(tof_days_array):
         )
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
-        arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+        departDeltaV, arrivalDeltaV = get_Delta_V(planet2id
                                                        , v1=v1
                                                        , v2=v2
                                                        , planet1name=planet1name
@@ -112,7 +112,7 @@ for i, tof in enumerate(tof_days_array):
         deltaV_matrix[i, j] = deltaV
         firstLoopCounter += 1
         sys.stdout.write(
-        f"\rPorkchop iteration progress: {firstLoopCounter} of 900"
+        f"\rPorkchop iteration progress: {firstLoopCounter} of 400"
         )
         sys.stdout.flush()
 
@@ -121,7 +121,7 @@ print("First rough sieve porkchop graph done!")
 
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 25000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -136,7 +136,7 @@ utcBestLaunch = julian_to_utc(jd)
 best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
-scanRange=10
+scanRange=15
 scanStep=1
 start_jd_array = np.arange(jd-scanRange, jd+scanRange, scanStep)
 tof_days_array = np.arange(best_tof-scanRange, best_tof+scanRange, scanStep)
@@ -155,7 +155,7 @@ for i, tof in enumerate(tof_days_array):
         )
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
-        arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
+        departDeltaV, arrivalDeltaV = get_Delta_V(planet2id
                                                        , v1=v1
                                                        , v2=v2
                                                        , planet1name=planet1name
@@ -168,7 +168,7 @@ for i, tof in enumerate(tof_days_array):
         deltaV_matrix[i, j] = deltaV
         secondLoopCounter += 1
         sys.stdout.write(
-            f"\rSecond porkchop iteration progress: {secondLoopCounter} of 400"
+            f"\rSecond porkchop iteration progress: {secondLoopCounter} of 900"
         )
         sys.stdout.flush()
 
@@ -194,7 +194,9 @@ best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
 JulianArrivalBest: float = float(best_tof) + jd
-
+best_tof = float(best_tof)
+print("Best ToF:", best_tof)
+print("Julian Arrival Best:", JulianArrivalBest, "Jd (should be departure date)", jd, "ToF:", best_tof*86400)
 v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400)
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
@@ -240,9 +242,11 @@ arrivalDate = julian_to_utc(JulianArrivalBest)
 
 angleArr = np.degrees(np.arccos(np.dot(v2, v_arrivalSecond) / (np.linalg.norm(v2)*np.linalg.norm(v_arrivalSecond))))
 
+daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF=best_tof*86400)
+
 print("Angle between", planet1name, "and", planetName, "relative to the Sun at departure:", np.round(np.degrees(r1r2angle), 2), "°")
 print("Optimal launch angle:", np.round((optimalAngle), 2))
-print("UTC departure date:", utcBestLaunch, "Julian departure date:", date_julian)
+print("UTC departure date:", utcBestLaunch, "Julian departure date:", jd)
 #print(first_v)
 #print(planet1name, "position in meters:", r_first)
 #print(planet1name, "velocity in m/s:", v_first)
@@ -252,7 +256,7 @@ print("UTC departure date:", utcBestLaunch, "Julian departure date:", date_julia
 #print(planet2name, "velocity in m/s:", v_second)
 #print(planet2name, "total velocity in m/s:", total_v_second)
 print("Time of flight:", daysToF, "days", hoursToF, "hours", minutesToF, "minutes", round(secsToF), "seconds")
-print("UTC arrival date:", arrivalDate, "Julian arrival date:", np.round(JulianArrivalBest, 1))
+print("UTC arrival date:", arrivalDate, "Julian arrival date:", JulianArrivalBest)
 #print("V1:", v1, "V2:", v2)
 #print("V1 norm:", v1_norm, "V2 norm:", v2_norm)
 #("Departure burn vector (m/s):", departDeltaV, ". Arrival capture burn vector (m/s):", arrivalDeltaV)
