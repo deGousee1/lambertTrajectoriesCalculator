@@ -129,9 +129,13 @@ def get_Peri_Speed(orbitHeight, planetName, vInfinity):
     periSpeed = np.sqrt(np.linalg.norm(vInfinity)**2 + 2*planetGM/(planetRadius+orbitHeight))
     return periSpeed
 
-def get_Delta_V(planet2id, JulianArrivalCorrected, v_first, v1, v2, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight):
+def get_Delta_V(planet2id, planet1id, JulianArrivalCorrected, v1, v2, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, jd):
     v_arrivalSecond = get_planet_vectors(planet2id, JulianArrivalCorrected)
     v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+
+
+    first_v = get_planet_vectors(planet1id, jd)
+    v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
 
     planetVector = v_first
     shipVector = v1
