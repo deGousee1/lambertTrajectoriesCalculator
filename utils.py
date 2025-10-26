@@ -39,23 +39,21 @@ def stumpff_S(z):
 
 def get_planet_id(planetname):
     if planetname == "Mercury":
-        planetid = 199
+        planetid = 1
     if planetname == "Venus":
         planetid = 299
     if planetname == "Earth":
         planetid = 399 #Można w przyszłości ustawić 3 zamiast 399 czyli barycentrum układu Ziemia-Księżyc a nie samą Ziemię
     if planetname == "Mars":
-        planetid = 499
+        planetid = 4
     if planetname == "Jupiter":
-        planetid = 599
+        planetid = 5
     if planetname == "Saturn":
-        planetid = 699
+        planetid = 6
     if planetname == "Uranus":
-        planetid = 799
+        planetid = 7
     if planetname == "Neptune":
-        planetid = 899
+        planetid = 8
     if planetname == "Pluto":
-        planetid = 999
-    if planetname == "Voyager 1": #A taki easter egg ;)
-        planetid = -31
+        planetid = 9
     return planetid

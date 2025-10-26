@@ -1,5 +1,5 @@
 import sys
-#import spiceypy as spice
+import spiceypy as spice
 import astroquery
 import scipy
 import time
@@ -10,6 +10,7 @@ from astropy.time import Time, TimeDelta
 from astropy.coordinates import EarthLocation
 from astroquery.jplhorizons import Horizons
 from scipy.optimize import newton
+import spiceypy as spice
 import pandas as pd
 import matplotlib.pyplot as plt
 from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, get_vInfinity, get_orbSpeed, \
@@ -18,15 +19,14 @@ from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
 from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, julian_to_utc
-
 AU = const.au.value
 DAY = 86400
 
-#spice.furnsh("de440s.bsp")
-#spice.furnsh("naif0012.tls")
-#spice.furnsh("pck00010.tpc")
+spice.furnsh("kernels/de440.bsp")
+spice.furnsh("kernels/naif0012.tls")
+spice.furnsh("kernels/pck00010.tpc")
 
-from ephemerides import get_planet_vectors
+from ephemerides import get_spice_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
 #date = "2025-06-15"
 date_julian = get_julian_date(date)
@@ -47,14 +47,14 @@ arrivalOrbitHeight = float(input("Arrival Orbit Height (km): "))*1000
 #departOrbitHeight = 200000
 #arrivalOrbitHeight = 2000000
 
-first_v = get_planet_vectors(planet1id, date_julian)
-second_v = get_planet_vectors(planet2id, date_julian)
+first_v = get_spice_planet_vectors(planet1id, date_julian) #Spice implemented
+second_v = get_spice_planet_vectors(planet2id, date_julian) #Spice implemented
 
-r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * AU
-r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * AU
+r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
+r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
 
-v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
-v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * 1000
+v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * 1000
 
 total_v_first = np.linalg.norm(v_first)
 total_v_second = np.linalg.norm(v_second)
@@ -84,11 +84,11 @@ JulianArrivalCorrected = correctedToFdays + date_julian
 #                                                       , JulianArrivalCorrected)
 #maxPorkValue=departOrbitHeight+2000
 
-scanRange=150
+scanRange=140
 scanStep=10
 start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
-tof_days_array = np.arange(correctedToFdays-scanRange*0.5, correctedToFdays+scanRange, scanStep)
-iterationGoal = ((scanRange*2)/scanStep)*((((correctedToFdays+scanRange) - (correctedToFdays-scanRange*0.5))/scanStep))
+tof_days_array = np.arange(correctedToFdays-correctedToFdays/2, correctedToFdays+scanRange, scanStep)
+iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 firstLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
@@ -127,7 +127,7 @@ print("First rough sieve porkchop graph done!")
 
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 25000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 35000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -142,15 +142,15 @@ utcBestLaunch = julian_to_utc(jd)
 best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
-first_v2 = get_planet_vectors(planet1id, jd)
-r_first2 = np.array(first_v2[["x", "y", "z"]].iloc[0]) * AU
-v_first2 = np.array(first_v2[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
+first_v2 = get_spice_planet_vectors(planet1id, jd) #Spice implemented
+r_first2 = np.array(first_v2[["x", "y", "z"]].iloc[0]) * 1000
+v_first2 = np.array(first_v2[["vx", "vy", "vz"]].iloc[0]) * 1000
 
-scanRange=15
+scanRange=10
 scanStep=1
 start_jd_array = np.arange(jd-scanRange, jd+scanRange, scanStep)
 tof_days_array = np.arange(best_tof-scanRange, best_tof+scanRange, scanStep)
-iterationGoal = ((scanRange*2)/scanStep)**2
+iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 secondLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
@@ -190,7 +190,7 @@ print("Second fine sieve porkchop graph done!")
 utc_labels = [d.strftime("%m-%d") for d in utc_dates]
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 35000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -205,13 +205,13 @@ utcBestLaunch = julian_to_utc(jd)
 best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
-first_v3 = get_planet_vectors(planet1id, jd)
-r_first3 = np.array(first_v2[["x", "y", "z"]].iloc[0]) * AU
-v_first3 = np.array(first_v2[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
+first_v3 = get_spice_planet_vectors(planet1id, jd) #Spice implemented
+r_first3 = np.array(first_v2[["x", "y", "z"]].iloc[0]) * 1000
+v_first3 = np.array(first_v2[["vx", "vy", "vz"]].iloc[0]) * 1000
 
-second_v = get_planet_vectors(planet2id, jd)
-r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * AU
-v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+second_v = get_spice_planet_vectors(planet2id, jd) #Spice implemented
+r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
+v_second = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * 1000
 
 JulianArrivalBest: float = float(best_tof) + jd
 best_tof = float(best_tof)
@@ -235,14 +235,14 @@ deltaV = departDeltaV# + arrivalDeltaV
 
 optimalAngle = abs(get_Optimal_Launch_Angle(planet2name=planet2name, correctedToFdays=best_tof))
 
-v_arrivalSecond = get_planet_vectors(planet_id=planet2id, date=JulianArrivalBest)
-v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+v_arrivalSecond = get_spice_planet_vectors(planet_id=planet2id, date=JulianArrivalBest) #Spice implemented
+v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * 1000
 
-first_v = get_planet_vectors(planet1id, jd)
+first_v = get_spice_planet_vectors(planet1id, jd) #Spice implemented
 
-r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * AU
+r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
 
-v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
+v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * 1000
 
 planetVector = v_first
 shipVector = v1
@@ -297,7 +297,7 @@ print("UTC arrival date:", arrivalDate, "Julian arrival date:", JulianArrivalBes
 print("Delta V needed for transfer from", planet1name, "orbit at height of", departOrbitHeight/1000, "km:", np.round(departDeltaV, 1), "m/s")
 print("Delta V needed for capture at", planet2name, "orbit at", arrivalOrbitHeight/1000, "km:", np.round(arrivalDeltaV, 1) ,"m/s")
 print("Angle at arrival:", angleArr, "°")
-if angleArr>20:
+if angleArr>25:
     print("WARNING! Catastrophically inefficient trajectory! The launch date is most likely set far from the Hohmann transfer window!")
 elif angleArr>15:
     print("Warning! Inefficient trajectory! The launch date may not be set during the perfect transfer window.")

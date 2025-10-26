@@ -4,7 +4,7 @@ from scipy.spatial.distance import kulczynski1
 from tqdm import tqdm
 import sys
 from db import get_planet_semimajor, get_planet_GM, get_planet_Radius, get_planet_orbPeriod
-from ephemerides import get_planet_vectors
+from ephemerides import get_spice_planet_vectors
 from utils import stumpff_C, stumpff_S
 
 AU = const.au.value
@@ -22,10 +22,10 @@ def get_ToF_estimate(planet2name, r1_norm):
     return estToF
 
 def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2id):
-    first_v = get_planet_vectors(planet1id, date_julian)
-    second_v = get_planet_vectors(planet2id, JulianArrivalETA)
-    r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * AU
-    r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * AU
+    first_v = get_spice_planet_vectors(planet1id, date_julian) #Spice implemented
+    second_v = get_spice_planet_vectors(planet2id, JulianArrivalETA) #Spice implemented
+    r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
+    r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
     r1_norm = np.linalg.norm(r_first)
     r2_norm = np.linalg.norm(r_second)
     planetName = "Sun"
@@ -43,12 +43,12 @@ def get_Optimal_Launch_Angle(planet2name, correctedToFdays):
 
 def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF):
     #Zdobycie wektorów
-    origin_vec = get_planet_vectors(planet1id, date_julian)
-    dest_vec = get_planet_vectors(planet2id, JulianArrivalCorrected)
-    pos_origin = np.array(origin_vec[["x", "y", "z"]].iloc[0]) * AU
-    pos_dest = np.array(dest_vec[["x", "y", "z"]].iloc[0]) * AU
+    origin_vec = get_spice_planet_vectors(planet1id, date_julian) #Spice implemented
+    dest_vec = get_spice_planet_vectors(planet2id, JulianArrivalCorrected) #Spice implemented
+    pos_origin = np.array(origin_vec[["x", "y", "z"]].iloc[0]) * 1000
+    pos_dest = np.array(dest_vec[["x", "y", "z"]].iloc[0]) * 1000
     #Wektor prędkosci planety docelowej dla sprawdzenia rozwiązania long way
-    v_dest = np.array(dest_vec[["vx", "vy", "vz"]].iloc[0]) * AU/DAY
+    v_dest = np.array(dest_vec[["vx", "vy", "vz"]].iloc[0]) * 1000
 
     r1_norm = np.linalg.norm(pos_origin)
     r2_norm = np.linalg.norm(pos_dest)
@@ -62,8 +62,8 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
     ToFLambert = 1
     yz = 2
     IterationCounter=0
-    k1 = 1000
-    k2 = 1000
+    k1 = 10000
+    k2 = 10000
     short_way_done = False
     while not short_way_done:
         z=0
@@ -130,12 +130,12 @@ def get_Peri_Speed(orbitHeight, planetName, vInfinity):
     return periSpeed
 
 def get_Delta_V(planet2id, planet1id, JulianArrivalCorrected, v1, v2, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, jd):
-    v_arrivalSecond = get_planet_vectors(planet2id, JulianArrivalCorrected)
-    v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+    v_arrivalSecond = get_spice_planet_vectors(planet2id, JulianArrivalCorrected) #Spice implemented
+    v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * 1000
 
 
-    first_v = get_planet_vectors(planet1id, jd)
-    v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * AU / DAY
+    first_v = get_spice_planet_vectors(planet1id, jd) #Spice implemented
+    v_first = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * 1000
 
     planetVector = v_first
     shipVector = v1
