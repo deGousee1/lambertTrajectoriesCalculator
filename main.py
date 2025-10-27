@@ -1,25 +1,19 @@
 import sys
-import spiceypy as spice
-import astroquery
-import scipy
-import time
 import numpy as np
-from astropy import units as u
-from astropy import constants as const
-from astropy.time import Time, TimeDelta
-from astropy.coordinates import EarthLocation
-from astroquery.jplhorizons import Horizons
-from scipy.optimize import newton
+#from astropy import constants as const
+from astropy.time import Time
 import spiceypy as spice
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from db import get_planet_orbPeriod
 from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, get_vInfinity, get_orbSpeed, \
     get_Peri_Speed, get_Optimal_Launch_Angle, get_Delta_V
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
 from utils import get_julian_date, get_planet_id, get_Clear_ToF_Time, julian_to_utc
-AU = const.au.value
+#AU = const.au.value
 DAY = 86400
 
 spice.furnsh("kernels/de440.bsp")
@@ -28,24 +22,19 @@ spice.furnsh("kernels/pck00010.tpc")
 
 from ephemerides import get_spice_planet_vectors
 date = input("Date of departure (yyyy-mm-dd): ")
-#date = "2025-06-15"
 date_julian = get_julian_date(date)
 
 planetName = input("First planet name: ")
-#planetName = "Earth"
 planet1name = planetName
 planet1id = get_planet_id(planetName)
 
 planetName = input("Second planet name: ")
-#planetName = "Jupiter"
 planet2name = planetName
 planet2id = get_planet_id(planetName)
 
 departOrbitHeight = float(input("Departure Orbit Height (km): "))*1000
 arrivalOrbitHeight = float(input("Arrival Orbit Height (km): "))*1000
 
-#departOrbitHeight = 200000
-#arrivalOrbitHeight = 2000000
 
 first_v = get_spice_planet_vectors(planet1id, date_julian) #Spice implemented
 second_v = get_spice_planet_vectors(planet2id, date_julian) #Spice implemented
@@ -72,6 +61,54 @@ daysToF, hoursToF, minutesToF, secsToF = get_Clear_ToF_Time(correctedToF)
 correctedToFdays = correctedToF/86400
 JulianArrivalCorrected = correctedToFdays + date_julian
 
+p1T = get_planet_orbPeriod(planet1name)
+p2T = get_planet_orbPeriod(planet2name)
+if p1T < p2T:
+    outward=True
+else:
+    outward=False
+
+optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
+Tsyn=1/abs((1/get_planet_orbPeriod(planet1name) - 1/get_planet_orbPeriod(planet2name)))
+
+scanRange=Tsyn*0.5
+scanStep=round(Tsyn*0.01)
+start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
+iterationGoal = len(start_jd_array)
+utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
+angleLoopCounter = 0
+angle_matrix = np.zeros(len(start_jd_array))
+for i, jd_start_val in enumerate(start_jd_array):
+    jd_start_val: float = jd_start_val
+    first_v = get_spice_planet_vectors(planet1id, jd_start_val)  # Spice implemented
+    second_v = get_spice_planet_vectors(planet2id, jd_start_val)  # Spice implemented
+
+    r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
+    r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
+    r1_norm = np.linalg.norm(r_first)
+    r2_norm = np.linalg.norm(r_second)
+
+    optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
+    realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
+    angleDifference = abs(optimalAngle - realAngle)
+    #print("Optimal Launch Angle: ", optimalAngle, julian_to_utc(jd_start_val))
+    #print("Real Launch Angle: ", realAngle, Tsyn)
+    angle_matrix[i] = angleDifference
+    angleLoopCounter += 1
+    sys.stdout.write(
+        f"\rTransfer window search progress: {angleLoopCounter} of {round(iterationGoal)}"
+    )
+    sys.stdout.flush()
+
+X, Y = np.meshgrid(utc_dates, [0])
+plt.plot(utc_dates, angle_matrix, marker='o')
+plt.xlabel('Maneuver start date', fontsize=11)
+plt.ylabel('Angle difference')
+ticks = X[0, ::20]
+plt.xticks(ticks)
+plt.title('Optimal transfer angle deviation plot')
+plt.show()
+
 #v1, v2 = get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF)
 #arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
    #                                                    , v1
@@ -84,14 +121,15 @@ JulianArrivalCorrected = correctedToFdays + date_julian
 #                                                       , JulianArrivalCorrected)
 #maxPorkValue=departOrbitHeight+2000
 
-scanRange=140
+scanRange=100
 scanStep=10
 start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
-tof_days_array = np.arange(correctedToFdays-correctedToFdays/2, correctedToFdays+scanRange, scanStep)
+tof_days_array = np.arange(correctedToFdays-correctedToFdays/6, correctedToFdays+scanRange, scanStep)
 iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 firstLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
+k=1
 for i, tof in enumerate(tof_days_array):
     for j, jd_start_val in enumerate(start_jd_array):
         jd_arrival = jd_start_val + tof
@@ -100,8 +138,19 @@ for i, tof in enumerate(tof_days_array):
             date_julian=jd_start_val,
             planet1id=planet1id,
             planet2id=planet2id,
-            correctedToF=tof * 86400
+            correctedToF=tof * 86400,
+            k=k
         )
+        if (v1 == 100).all():
+            v1, v2 = get_LambertV(
+                JulianArrivalCorrected=jd_arrival,
+                date_julian=jd_start_val,
+                planet1id=planet1id,
+                planet2id=planet2id,
+                correctedToF=tof * 86400,
+                k=100
+            )
+            k=100
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
         departDeltaV, arrivalDeltaV = get_Delta_V(planet2id=planet2id,
@@ -117,17 +166,23 @@ for i, tof in enumerate(tof_days_array):
         deltaV = departDeltaV + arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         firstLoopCounter += 1
-        sys.stdout.write(
-            f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
-        )
-        sys.stdout.flush()
+        if k==100:
+            sys.stdout.write(
+                f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}. Error detected! Lambert will now run in slower backup mode." #Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
+            )
+            sys.stdout.flush()
+        else:
+            sys.stdout.write(
+                f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
+            )
+            sys.stdout.flush()
 
 print()
 print("First rough sieve porkchop graph done!")
 
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 35000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -154,6 +209,7 @@ iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 secondLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
+k=1
 for i, tof in enumerate(tof_days_array):
     for j, jd_start_val in enumerate(start_jd_array):
         jd_arrival = jd_start_val + tof
@@ -162,8 +218,20 @@ for i, tof in enumerate(tof_days_array):
             date_julian=jd_start_val,
             planet1id=planet1id,
             planet2id=planet2id,
-            correctedToF=tof * 86400
+            correctedToF=tof * 86400,
+            k=k
         )
+        if (v1 == 100).all():
+            v1, v2 = get_LambertV(
+                JulianArrivalCorrected=jd_arrival,
+                date_julian=jd_start_val,
+                planet1id=planet1id,
+                planet2id=planet2id,
+                correctedToF=tof * 86400,
+                k=100
+            )
+            k = 100
+
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
         departDeltaV, arrivalDeltaV = get_Delta_V(planet2id=planet2id
@@ -179,10 +247,16 @@ for i, tof in enumerate(tof_days_array):
         deltaV = departDeltaV + arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         secondLoopCounter += 1
-        sys.stdout.write(
-            f"\rSecond porkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}"
-        )
-        sys.stdout.flush()
+        if k==100:
+            sys.stdout.write(
+                f"\rPorkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}. Error detected! Lambert will now run in slower backup mode." #Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
+            )
+            sys.stdout.flush()
+        else:
+            sys.stdout.write(
+                f"\rPorkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}"
+            )
+            sys.stdout.flush()
 
 print()
 print("Second fine sieve porkchop graph done!")
@@ -190,7 +264,7 @@ print("Second fine sieve porkchop graph done!")
 utc_labels = [d.strftime("%m-%d") for d in utc_dates]
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 35000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -217,7 +291,23 @@ JulianArrivalBest: float = float(best_tof) + jd
 best_tof = float(best_tof)
 print("Best ToF:", best_tof)
 print("Julian Arrival Best:", JulianArrivalBest, "Jd (should be departure date)", jd, "ToF:", best_tof*86400)
-v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400)
+k=1
+v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400, k=k)
+if (v1 == 100).all():
+    v1, v2 = get_LambertV(
+        JulianArrivalCorrected=JulianArrivalBest,
+        date_julian=jd,
+        planet1id=planet1id,
+        planet2id=planet2id,
+        correctedToF=best_tof * 86400,
+        k=100
+    )
+    sys.stdout.write(
+        f"\rError detected! Lambert will now run in slower backup mode."
+        # Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
+    )
+    sys.stdout.flush()
+    print()
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
 
@@ -233,7 +323,7 @@ departDeltaV, arrivalDeltaV = get_Delta_V(planet2id=planet2id
                                                        , jd=jd)
 deltaV = departDeltaV# + arrivalDeltaV
 
-optimalAngle = abs(get_Optimal_Launch_Angle(planet2name=planet2name, correctedToFdays=best_tof))
+optimalAngle = abs(get_Optimal_Launch_Angle(planet2name=planet2name, correctedToFdays=best_tof, outward=outward))
 
 v_arrivalSecond = get_spice_planet_vectors(planet_id=planet2id, date=JulianArrivalBest) #Spice implemented
 v_arrivalSecond = np.array(v_arrivalSecond[["vx", "vy", "vz"]].iloc[0]) * 1000

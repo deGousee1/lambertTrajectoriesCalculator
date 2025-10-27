@@ -1,13 +1,10 @@
 import numpy as np
 from astropy import constants as const
-from scipy.spatial.distance import kulczynski1
-from tqdm import tqdm
-import sys
 from db import get_planet_semimajor, get_planet_GM, get_planet_Radius, get_planet_orbPeriod
 from ephemerides import get_spice_planet_vectors
 from utils import stumpff_C, stumpff_S
 
-AU = const.au.value
+#AU = const.au.value
 DAY = 86400
 
 
@@ -33,15 +30,18 @@ def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2
     correctedToF = np.pi * np.sqrt( ( ( (r1_norm + r2_norm) / 2 ) ** 3 ) / sunGM)
     return correctedToF
 
-def get_Optimal_Launch_Angle(planet2name, correctedToFdays):
+def get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward):
     planetName = planet2name
     planet2orbPeriod = float(get_planet_orbPeriod(planetName))
     omega=360/planet2orbPeriod
     deltaPhi=omega*correctedToFdays
-    optimalAngle=180-deltaPhi
-    return optimalAngle
+    if outward:
+        optimalAngle = 180 - deltaPhi  # np. Earth → Mars
+    else:
+        optimalAngle = 180 + deltaPhi  # np. Mars → Earth
+    return optimalAngle % 360
 
-def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF):
+def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF, k):
     #Zdobycie wektorów
     origin_vec = get_spice_planet_vectors(planet1id, date_julian) #Spice implemented
     dest_vec = get_spice_planet_vectors(planet2id, JulianArrivalCorrected) #Spice implemented
@@ -62,8 +62,12 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
     ToFLambert = 1
     yz = 2
     IterationCounter=0
-    k1 = 10000
-    k2 = 10000
+    if k == 100:
+        k1=1000
+        k2=1000
+    else:
+        k1 = 100000
+        k2 = 100000
     short_way_done = False
     while not short_way_done:
         z=0
@@ -76,15 +80,23 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
                 z -=1e-12 * (correctedToF - ToFLambert)*k1
             else:
                 z += 1e-12 * (correctedToF - ToFLambert)*k2
-            if IterationCounter>1000000:
-                #k1 = k1 / 10
-                #k2 = k2 / 10
-                z=0
             Cz = stumpff_C(z)
             Sz = stumpff_S(z)
+            if Cz<=0:
+                k1 = np.full(3, 100)
+                k2 = np.full(3, 100)
+                return k1, k2
             yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
+            if yz<0:
+                k1 = np.full(3, 100)
+                k2 = np.full(3, 100)
+                return k1, k2
             ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM) #ToFLambert = ((yz ** 1.5) * Sz / Cz + A * np.sqrt(yz)) / np.sqrt(sunGM)
             IterationCounter += 1
+            if IterationCounter>1000000:
+                k1 = np.full(3, 100)
+                k2 = np.full(3, 100)
+                return k1, k2
             #sys.stdout.write(
             #    f"\rLambert iteration: {IterationCounter} | ΔToF = {np.round(correctedToF - ToFLambert, 2)} | z = {z}"
             #)
