@@ -77,6 +77,7 @@ start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanSte
 iterationGoal = len(start_jd_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 angleLoopCounter = 0
+angleDifference=0
 angle_matrix = np.zeros(len(start_jd_array))
 for i, jd_start_val in enumerate(start_jd_array):
     jd_start_val: float = jd_start_val
@@ -91,23 +92,91 @@ for i, jd_start_val in enumerate(start_jd_array):
     optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
     realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
     angleDifference = abs(optimalAngle - realAngle)
-    #print("Optimal Launch Angle: ", optimalAngle, julian_to_utc(jd_start_val))
-    #print("Real Launch Angle: ", realAngle, Tsyn)
     angle_matrix[i] = angleDifference
     angleLoopCounter += 1
     sys.stdout.write(
         f"\rTransfer window search progress: {angleLoopCounter} of {round(iterationGoal)}"
     )
     sys.stdout.flush()
-
-X, Y = np.meshgrid(utc_dates, [0])
+print()
 plt.plot(utc_dates, angle_matrix, marker='o')
 plt.xlabel('Maneuver start date', fontsize=11)
 plt.ylabel('Angle difference')
-ticks = X[0, ::20]
-plt.xticks(ticks)
 plt.title('Optimal transfer angle deviation plot')
 plt.show()
+min_idx = np.argmin(angle_matrix)
+min_angle = angle_matrix[min_idx]
+
+angleDifference=0
+jd_start_val = date_julian-scanRange
+jd_start_val: float = jd_start_val
+currentBestAngle = 181
+worstAngle = 0
+bestAngleDateJ = 0
+currentBestAngleDateJ = 0
+worstAngleDateJ = 0
+windowFound = False
+
+for jdDate in start_jd_array: # Finding maximum angle difference
+    jdDate: float = jdDate
+    first_v = get_spice_planet_vectors(planet1id, jdDate)  # Spice implemented
+    second_v = get_spice_planet_vectors(planet2id, jdDate)  # Spice implemented
+
+    r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
+    r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
+    r1_norm = np.linalg.norm(r_first)
+    r2_norm = np.linalg.norm(r_second)
+    optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
+    realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
+    angleDifference = abs(optimalAngle - realAngle)
+    if angleDifference > worstAngle:
+        worstAngle = angleDifference
+        worstAngleDateJ = jdDate
+    angleLoopCounter += 1
+    sys.stdout.write(
+        f"\rTransfer window search progress: {angleLoopCounter} of {round(iterationGoal)}"
+    )
+    sys.stdout.flush()
+utcWorstAngleDate = julian_to_utc(worstAngleDateJ)
+print("Worst angle date:", utcWorstAngleDate)
+print("Worst angle :", worstAngle)
+
+start_jd_array = np.arange(worstAngleDateJ, worstAngleDateJ+scanRange*2, scanStep)
+
+for jdDate in start_jd_array:
+    if windowFound == False:
+        jdDate: float = jdDate
+        first_v = get_spice_planet_vectors(planet1id, jdDate)  # Spice implemented
+        second_v = get_spice_planet_vectors(planet2id, jdDate)  # Spice implemented
+
+        r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
+        r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
+        r1_norm = np.linalg.norm(r_first)
+        r2_norm = np.linalg.norm(r_second)
+        optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
+        realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
+        angleDifference = abs(optimalAngle - realAngle)
+        if angleDifference < currentBestAngle:
+            currentBestAngle = angleDifference
+            currentBestAngleDateJ = jdDate
+            if outward == True:
+                if currentBestAngle < 5:
+                    bestAngle = currentBestAngle
+                    bestAngleDateJ = jdDate
+                    windowFound = True
+    angleLoopCounter += 1
+    sys.stdout.write(
+        f"\rTransfer window search progress: {angleLoopCounter} of {round(iterationGoal)}"
+    )
+    sys.stdout.flush()
+print()
+bestAngleDateJ = currentBestAngleDateJ
+bestAngle = currentBestAngle
+
+utcTransferWindow = julian_to_utc(bestAngleDateJ)
+jdTransferWindow = get_julian_date(utcTransferWindow)
+print("Best transfer window date:", utcTransferWindow)
+print("Best transfer window angle:", bestAngle)
 
 #v1, v2 = get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF)
 #arrivalDeltaV, departDeltaV = get_Delta_V(planet2id
@@ -123,8 +192,8 @@ plt.show()
 
 scanRange=100
 scanStep=10
-start_jd_array = np.arange(date_julian-scanRange, date_julian+scanRange, scanStep)
-tof_days_array = np.arange(correctedToFdays-correctedToFdays/6, correctedToFdays+scanRange, scanStep)
+start_jd_array = np.arange(bestAngleDateJ-scanRange, bestAngleDateJ+scanRange, scanStep)
+tof_days_array = np.arange(correctedToFdays-round(correctedToFdays*0.5), correctedToFdays+scanRange, scanStep)
 iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 firstLoopCounter = 0
@@ -132,6 +201,7 @@ deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
 k=1
 for i, tof in enumerate(tof_days_array):
     for j, jd_start_val in enumerate(start_jd_array):
+        tof:float = tof
         jd_arrival = jd_start_val + tof
         v1, v2 = get_LambertV(
             JulianArrivalCorrected=jd_arrival,
@@ -163,7 +233,7 @@ for i, tof in enumerate(tof_days_array):
                                                        , arrivalOrbitHeight=arrivalOrbitHeight
                                                        , JulianArrivalCorrected=jd_arrival
                                                        , jd=jd_start_val)
-        deltaV = departDeltaV + arrivalDeltaV
+        deltaV = departDeltaV #+ arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         firstLoopCounter += 1
         if k==100:
@@ -182,7 +252,7 @@ print("First rough sieve porkchop graph done!")
 
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 30000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -244,7 +314,7 @@ for i, tof in enumerate(tof_days_array):
                                                        , arrivalOrbitHeight=arrivalOrbitHeight
                                                        , JulianArrivalCorrected=jd_arrival
                                                        , jd=jd_start_val)
-        deltaV = departDeltaV + arrivalDeltaV
+        deltaV = departDeltaV #+ arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         secondLoopCounter += 1
         if k==100:
@@ -264,7 +334,7 @@ print("Second fine sieve porkchop graph done!")
 utc_labels = [d.strftime("%m-%d") for d in utc_dates]
 plt.figure(figsize=(10,6))
 X, Y = np.meshgrid(utc_dates, tof_days_array)
-deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 20000)
+deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, 30000)
 plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
 plt.colorbar(label='Delta-V [m/s]')
 plt.xlabel('Data startu')
@@ -280,8 +350,8 @@ best_deltaV = deltaV_matrix[i_min, j_min]
 print("Best time of flight:", best_tof, "Best launch date:",utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
 first_v3 = get_spice_planet_vectors(planet1id, jd) #Spice implemented
-r_first3 = np.array(first_v2[["x", "y", "z"]].iloc[0]) * 1000
-v_first3 = np.array(first_v2[["vx", "vy", "vz"]].iloc[0]) * 1000
+r_first3 = np.array(first_v3[["x", "y", "z"]].iloc[0]) * 1000
+v_first3 = np.array(first_v3[["vx", "vy", "vz"]].iloc[0]) * 1000
 
 second_v = get_spice_planet_vectors(planet2id, jd) #Spice implemented
 r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
