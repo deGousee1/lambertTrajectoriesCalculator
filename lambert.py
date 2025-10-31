@@ -33,8 +33,8 @@ def get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward):
     if outward:
         optimalAngle = 180 - deltaPhi
     else:
-        optimalAngle = 180 + deltaPhi
-    return optimalAngle % 360
+        optimalAngle = deltaPhi - 180
+    return optimalAngle % 180
 
 def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF, k):
     #Zdobycie wektorów
@@ -80,12 +80,17 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
             if Cz<=0:
                 k1 = np.full(3, 100)
                 k2 = np.full(3, 100)
+                #print("C(z) error")
                 return k1, k2
             yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
             #Obsługa błędu funkcji y(z)
             if yz<0:
                 k1 = np.full(3, 100)
                 k2 = np.full(3, 100)
+                #print("y(z) error")
+                #print(A)
+                #print(Sz)
+                #print(z)
                 return k1, k2
             ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM)
             IterationCounter += 1
@@ -93,6 +98,7 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
             if IterationCounter>1000000:
                 k1 = np.full(3, 100)
                 k2 = np.full(3, 100)
+                #print("Iteration number error")
                 return k1, k2
         #Wyznaczenie parametrów f, g i g'
         f=1 - (yz / r1_norm)
