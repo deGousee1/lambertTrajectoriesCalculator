@@ -30,7 +30,7 @@ def stumpff_C(z):
         return 1/2
 
 def stumpff_S(z):
-    if z > 0:
+    if z > 0: #Można zmusić program do użycia przyblizenia 1/6 jak z jest bardzo blisko 0. Zapobiegnie to błedom. To samo do C(z)
         return (np.sqrt(z) - np.sin(np.sqrt(z))) / (np.sqrt(z)**3)
     elif z < 0:
         return (np.sinh(np.sqrt(-z)) - np.sqrt(-z)) / (np.sqrt(-z)**3)

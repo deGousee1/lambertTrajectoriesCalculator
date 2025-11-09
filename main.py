@@ -224,7 +224,6 @@ iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 firstLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
-k=1
 for i, tof in enumerate(tof_days_array):
     for j, jd_start_val in enumerate(start_jd_array):
         tof:float = tof
@@ -234,19 +233,8 @@ for i, tof in enumerate(tof_days_array):
             date_julian=jd_start_val,
             planet1id=planet1id,
             planet2id=planet2id,
-            correctedToF=tof * 86400,
-            k=k
+            correctedToF=tof * 86400
         )
-        if (v1 == 100).all():
-            v1, v2 = get_LambertV(
-                JulianArrivalCorrected=jd_arrival,
-                date_julian=jd_start_val,
-                planet1id=planet1id,
-                planet2id=planet2id,
-                correctedToF=tof * 86400,
-                k=100
-            )
-            k=100
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
         departDeltaV, arrivalDeltaV = get_Delta_V(planet2id=planet2id,
@@ -262,16 +250,10 @@ for i, tof in enumerate(tof_days_array):
         deltaV = departDeltaV + arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         firstLoopCounter += 1
-        if k==100:
-            sys.stdout.write(
-                f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}. Error detected! Lambert will now run in slower backup mode." #Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
-            )
-            sys.stdout.flush()
-        else:
-            sys.stdout.write(
-                f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
-            )
-            sys.stdout.flush()
+        sys.stdout.write(
+            f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
+        )
+        sys.stdout.flush()
 
 print()
 print("First rough sieve porkchop graph done!")
@@ -314,7 +296,6 @@ iterationGoal = len(start_jd_array)*len(tof_days_array)
 utc_dates = [Time(jd, format='jd').to_datetime() for jd in start_jd_array]
 secondLoopCounter = 0
 deltaV_matrix = np.zeros((len(tof_days_array), len(start_jd_array)))
-k=1
 for i, tof in enumerate(tof_days_array):
     for j, jd_start_val in enumerate(start_jd_array):
         jd_arrival = jd_start_val + tof
@@ -323,19 +304,8 @@ for i, tof in enumerate(tof_days_array):
             date_julian=jd_start_val,
             planet1id=planet1id,
             planet2id=planet2id,
-            correctedToF=tof * 86400,
-            k=k
+            correctedToF=tof * 86400
         )
-        if (v1 == 100).all():
-            v1, v2 = get_LambertV(
-                JulianArrivalCorrected=jd_arrival,
-                date_julian=jd_start_val,
-                planet1id=planet1id,
-                planet2id=planet2id,
-                correctedToF=tof * 86400,
-                k=100
-            )
-            k = 100
 
         #Obliczenia deltaV
         jd_arrival = jd_start_val + tof
@@ -352,16 +322,10 @@ for i, tof in enumerate(tof_days_array):
         deltaV = departDeltaV + arrivalDeltaV
         deltaV_matrix[i, j] = deltaV
         secondLoopCounter += 1
-        if k==100:
-            sys.stdout.write(
-                f"\rPorkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}. Error detected! Lambert will now run in slower backup mode." #Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
-            )
-            sys.stdout.flush()
-        else:
-            sys.stdout.write(
-                f"\rPorkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}"
-            )
-            sys.stdout.flush()
+        sys.stdout.write(
+            f"\rPorkchop iteration progress: {secondLoopCounter} of {round(iterationGoal)}"
+        )
+        sys.stdout.flush()
 
 print()
 print("Second fine sieve porkchop graph done!")
@@ -396,23 +360,7 @@ JulianArrivalBest: float = float(best_tof) + jd
 best_tof = float(best_tof)
 print("Best ToF:", best_tof)
 print("Julian Arrival Best:", JulianArrivalBest, "Jd (should be departure date)", jd, "ToF:", best_tof*86400)
-k=1
-v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400, k=k)
-if (v1 == 100).all():
-    v1, v2 = get_LambertV(
-        JulianArrivalCorrected=JulianArrivalBest,
-        date_julian=jd,
-        planet1id=planet1id,
-        planet2id=planet2id,
-        correctedToF=best_tof * 86400,
-        k=100
-    )
-    sys.stdout.write(
-        f"\rError detected! Lambert will now run in slower backup mode."
-        # Można dodać odniesienie do instrukcji gdzie będzie powiedziane co w tym wypadku zrobić
-    )
-    sys.stdout.flush()
-    print()
+v1, v2 = get_LambertV(JulianArrivalCorrected=JulianArrivalBest, date_julian=jd, planet1id=planet1id, planet2id=planet2id, correctedToF=best_tof * 86400)
 v1_norm = np.linalg.norm(v1)
 v2_norm = np.linalg.norm(v2)
 

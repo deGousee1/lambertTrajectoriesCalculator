@@ -36,7 +36,7 @@ def get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward):
         optimalAngle = deltaPhi - 180
     return optimalAngle % 180
 
-def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF, k):
+def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, correctedToF):
     #Zdobycie wektorów
     origin_vec = get_spice_planet_vectors(planet1id, date_julian)
     dest_vec = get_spice_planet_vectors(planet2id, JulianArrivalCorrected)
@@ -54,59 +54,57 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
     A = np.sin(theta) * np.sqrt( (r1_norm * r2_norm) / (1 - np.cos(theta)) )
     #Inicjalizacja zmiennych
     ToFLambert = 1
+    ToFLambertMid = 1
     yz = 2
+    yzMid = 2
     IterationCounter=0
     v1 = 0
     v2 = 0
     short_way_done = False
-    #Sprawdzenie kodu błędu i ustawienie prędkości iteracji prostej
-    if k == 100:
-        k1=1000
-        k2=1000
-    else:
-        k1 = 100000
-        k2 = 100000
     #Problem Lamberta
     while not short_way_done:
         z=0
-        while abs(correctedToF - ToFLambert) > 0.001:
-            if correctedToF - ToFLambert < 0:
-                z -=1e-12 * (correctedToF - ToFLambert)*k1
+        z1 = 0
+        z2 = 20
+        while abs(correctedToF - ToFLambertMid) > 0.001:
+            Cz1 = stumpff_C(z1)
+            Sz1 = stumpff_S(z1)
+            Cz2 = stumpff_C(z2)
+            Sz2 = stumpff_S(z2)
+
+            yz1 = r1_norm + r2_norm + A * ((z1 * Sz1 - 1) / np.sqrt(Cz1))
+            yz2 = r1_norm + r2_norm + A * ((z2 * Sz2 - 1) / np.sqrt(Cz2))
+
+            ToFLambert1 = (((yz1 / Cz1) ** 1.5) * Sz1 + A * np.sqrt(yz1)) / np.sqrt(sunGM)
+            ToFLambert2 = (((yz2 / Cz2) ** 1.5) * Sz2 + A * np.sqrt(yz2)) / np.sqrt(sunGM)
+            iloczyn = (correctedToF - ToFLambert1) * (correctedToF - ToFLambert2)
+            if iloczyn < 0:
+                zMid = (z1+z2)/2
+                CzMid = stumpff_C(zMid)
+                SzMid = stumpff_S(zMid)
+                yzMid = r1_norm + r2_norm + A * ((zMid * SzMid - 1) / np.sqrt(CzMid))
+                ToFLambertMid = (((yzMid / CzMid) ** 1.5) * SzMid + A * np.sqrt(yzMid)) / np.sqrt(sunGM)
+                iloczyn = (correctedToF - ToFLambert1) * (correctedToF - ToFLambertMid)
+                if iloczyn > 0:
+                    z1 = zMid
+                else:
+                    z2 = zMid
             else:
-                z += 1e-12 * (correctedToF - ToFLambert)*k2
-            Cz = stumpff_C(z)
-            Sz = stumpff_S(z)
-            #Obsługa błędu funkcji Stumpffa C(z)
-            if Cz<=0:
-                k1 = np.full(3, 100)
-                k2 = np.full(3, 100)
-                #print("C(z) error")
-                return k1, k2
-            yz = r1_norm + r2_norm + A * ((z * Sz - 1) / np.sqrt(Cz))
-            #Obsługa błędu funkcji y(z)
-            if yz<0:
-                k1 = np.full(3, 100)
-                k2 = np.full(3, 100)
-                #print("y(z) error")
-                #print(A)
-                #print(Sz)
-                #print(z)
-                return k1, k2
-            ToFLambert = (((yz / Cz) ** 1.5) * Sz + A * np.sqrt(yz)) / np.sqrt(sunGM)
+                print("1:", (correctedToF - ToFLambert1), "2:", (correctedToF - ToFLambert2))
+                print("z1:", z1, "z2:", z2)
+
             IterationCounter += 1
             #Obsługa błędu zbyt dużej liczby iteracji
-            if IterationCounter>1000000:
-                k1 = np.full(3, 100)
-                k2 = np.full(3, 100)
-                #print("Iteration number error")
-                return k1, k2
+            if IterationCounter>1000:
+                print("Error iteration count too high")
+
+
         #Wyznaczenie parametrów f, g i g'
-        f=1 - (yz / r1_norm)
-        g = A * np.sqrt(yz/sunGM)
-        gp = 1-(yz/r2_norm)
+        f=1 - (yzMid / r1_norm)
+        g = A * np.sqrt(yzMid/sunGM)
+        gp = 1-(yzMid/r2_norm)
         v1=(1/g)*(pos_dest-(f*pos_origin))
         v2=(1/g)*(gp*pos_dest-pos_origin)
-
         #Sprawdzenie czy podana trajektoria jest krótszą drogą
         angle = np.arccos(np.dot(v2, v_dest) / (np.linalg.norm(v2)*np.linalg.norm(v_dest)))
         if angle > np.pi/2:
