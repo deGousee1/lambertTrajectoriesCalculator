@@ -57,3 +57,19 @@ def get_planet_id(planetname):
     if planetname == "Pluto":
         planetid = 9
     return planetid
+
+def ask_for_Entry_Data():
+    date = input("Date of departure (yyyy-mm-dd): ")
+    date_julian = get_julian_date(date)
+
+    planetName = input("First planet name: ")
+    planet1name = planetName
+    planet1id = get_planet_id(planetName)
+
+    planetName = input("Second planet name: ")
+    planet2name = planetName
+    planet2id = get_planet_id(planetName)
+
+    departOrbitHeight = float(input("Departure Orbit Height (km): ")) * 1000
+    arrivalOrbitHeight = float(input("Arrival Orbit Height (km): ")) * 1000
+    return date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight

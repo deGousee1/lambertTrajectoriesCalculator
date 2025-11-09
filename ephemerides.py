@@ -1,6 +1,5 @@
 from astroquery.jplhorizons import Horizons
 import spiceypy as spice
-import numpy as np
 import pandas as pd
 
 def get_spice_planet_vectors(planet_id: int, date: float):

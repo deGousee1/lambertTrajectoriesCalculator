@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Refined the transfer window finder. Now functional for all planets except Pluto">
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Bisection method z finder implemented, replacing the simple iteration method">
+      <change afterPath="$PROJECT_DIR$/plots.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambert.py" beforeDir="false" afterPath="$PROJECT_DIR$/lambert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ephemerides.py" beforeDir="false" afterPath="$PROJECT_DIR$/ephemerides.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
@@ -122,7 +123,8 @@
       <workItem from="1762165804975" duration="920000" />
       <workItem from="1762257065654" duration="8157000" />
       <workItem from="1762289292283" duration="1966000" />
-      <workItem from="1762689357519" duration="6577000" />
+      <workItem from="1762689357519" duration="8177000" />
+      <workItem from="1762709573427" duration="5903000" />
     </task>
     <task id="LOCAL-00001" summary="main creation">
       <option name="closed" value="true" />
@@ -356,7 +358,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761952055852</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Bisection method z finder implemented, replacing the simple iteration method">
+      <option name="closed" value="true" />
+      <created>1762697677874</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1762697677874</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -374,7 +384,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Pobieranie wektorów dla dwóch dowolnych planet i konwersja ich na metry i metry na sekundę" />
     <MESSAGE value="Voyager 1 easter egg" />
     <MESSAGE value="Neptune name bug fix" />
     <MESSAGE value="Total planet velocity added and reorganised output display" />
@@ -399,7 +408,8 @@
     <MESSAGE value="Added transfer window finder graph (not functional yet, but shows good results) and introduced Lambert slower backup mode" />
     <MESSAGE value="Transfer window finder mostly functional. Titied up the lambert class" />
     <MESSAGE value="Refined the transfer window finder. Now functional for all planets except Pluto" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refined the transfer window finder. Now functional for all planets except Pluto" />
+    <MESSAGE value="Bisection method z finder implemented, replacing the simple iteration method" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bisection method z finder implemented, replacing the simple iteration method" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -407,6 +417,6 @@
     <SUITE FILE_PATH="coverage/lambertTrajectories$db.coverage" NAME="db Coverage Results" MODIFIED="1760721243579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$utils.coverage" NAME="utils Coverage Results" MODIFIED="1761939963585" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lambertTrajectories$ephemerides.coverage" NAME="ephemerides Coverage Results" MODIFIED="1760633421375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1762697494289" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lambertTrajectories$main.coverage" NAME="main Coverage Results" MODIFIED="1762716642735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
