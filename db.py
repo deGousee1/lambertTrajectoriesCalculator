@@ -43,3 +43,19 @@ def get_planet_orbPeriod(planetName):
     planetOrbPeriod = cursor.fetchone()
     conn.close()
     return planetOrbPeriod[0]
+
+def get_planet_SOI(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT soi_range FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetSoiRange = cursor.fetchone()
+    conn.close()
+    return planetSoiRange[0]
+
+def get_planet_Min_Orb_Height(planetName):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT min_orbit_height FROM celestial_bodies WHERE name = ?", (planetName,))
+    planetMinOrbHeight = cursor.fetchone()
+    conn.close()
+    return planetMinOrbHeight[0]

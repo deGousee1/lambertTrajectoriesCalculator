@@ -1,6 +1,7 @@
 import numpy as np
 from astropy.time import Time
 import warnings
+from db import get_planet_Min_Orb_Height, get_planet_SOI
 from erfa import ErfaWarning
 warnings.filterwarnings('ignore', category=ErfaWarning)
 
@@ -65,11 +66,33 @@ def ask_for_Entry_Data():
     planetName = input("First planet name: ")
     planet1name = planetName
     planet1id = get_planet_id(planetName)
+    departOrbMin = get_planet_Min_Orb_Height(planetName)
+    departOrbMax = get_planet_SOI(planetName)
 
     planetName = input("Second planet name: ")
     planet2name = planetName
     planet2id = get_planet_id(planetName)
+    arrivalOrbMin = get_planet_Min_Orb_Height(planetName)
+    arrivalOrbMax = get_planet_SOI(planetName)
 
     departOrbitHeight = float(input("Departure Orbit Height (km): ")) * 1000
     arrivalOrbitHeight = float(input("Arrival Orbit Height (km): ")) * 1000
+    print("Departure orbit min: ", departOrbMin)
+    print("Arrival orbit min: ", arrivalOrbMin)
+    print("Departure orbit max: ", departOrbMax)
+    print("Arrival orbit max: ", arrivalOrbMax)
+    if departOrbitHeight < departOrbMin*1000:
+        departOrbitHeight = departOrbMin*1000
+        print("Departure orbit height too low! New valid orbit height is set to", departOrbitHeight/1000, "km.")
+    if departOrbitHeight > departOrbMax*1000:
+        departOrbitHeight = departOrbMax*1000
+        print("Departure orbit height too high! New valid orbit height is set to", departOrbitHeight/1000, "km.")
+    if arrivalOrbitHeight < arrivalOrbMin*1000:
+        arrivalOrbitHeight = arrivalOrbMin*1000
+        print("Arrival orbit height too low! New valid orbit height is set to", arrivalOrbitHeight/1000, "km.")
+    if arrivalOrbitHeight > arrivalOrbMax*1000:
+        arrivalOrbitHeight = arrivalOrbMax*1000
+        print("Arrival orbit height too high! New valid orbit height is set to", arrivalOrbitHeight/1000, "km.")
+    print("Arrival orbit height: ", arrivalOrbitHeight)
+    print("Departure orbit height: ", departOrbitHeight)
     return date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight
