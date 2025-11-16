@@ -2,7 +2,7 @@ import numpy as np
 import spiceypy as spice
 from db import get_planet_orbPeriod
 from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, get_Optimal_Launch_Angle, get_Delta_V
-from plots import transfer_Angle_Scan, porkchop_plot
+from plots import transfer_Angle_Scan, porkchop_plot, create_Result_PDF_File
 from utils import get_Clear_ToF_Time, julian_to_utc, ask_for_Entry_Data
 from ephemerides import get_spice_planet_vectors
 DAY = 86400
@@ -141,3 +141,18 @@ elif angleArr>5:
     print("Warning! Slightly inefficient trajectory! The launch date may not be set during the perfect transfer window.")
 else:
     print("Good Hohmann transfer found!")
+with open('workingFiles/manData.txt', 'w') as f:
+    f.write('Maneuver data:\n')
+    f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {jd}\n")
+    f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes {round(secsToF)} seconds\n")
+    f.write(f"UTC arrival date: {arrivalDate} Julian arrival date: {JulianArrivalBest}\n")
+    f.write(f"Delta V needed for transfer from {planet1name} orbit at height of {departOrbitHeight/1000 }km to {planet2name}:{np.round(departDeltaV, 1)} m/s\n")
+    f.write(f"DeltaV needed for capture at {planet2name} for an orbit height of {arrivalOrbitHeight/1000 }km: {np.round(arrivalDeltaV, 1)} m/s\n")
+    f.write(f"Ship's arrival velocity vector angle relative to the {planet1name} velocity vector at arrival: {angleArr}°\n")
+with open('workingFiles/tWindowData.txt', 'w') as f:
+    f.write('Transfer window data:\n')
+    f.write(f"Best transfer window date: {utcTransferWindow}\n")
+    f.write(f"Optimal transfer angle: {optimalAngle}\n")
+    f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
+    f.write(f"Synodic time for a transfer from {planet1name} to {planet2name}: {np.round(Tsyn, 1)} days\n")
+create_Result_PDF_File(planet1name, planet2name)

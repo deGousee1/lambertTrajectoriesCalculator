@@ -1,10 +1,13 @@
 import sys
 import numpy as np
+from aspose.pdf.text import FontStyles
 from astropy.time import Time
 from ephemerides import get_spice_planet_vectors
 from lambert import get_LambertV, get_Optimal_Launch_Angle, get_Delta_V
 import matplotlib.pyplot as plt
 from utils import julian_to_utc
+
+import aspose.pdf as ap
 
 def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward):
     scanRange = Tsyn * 0.5
@@ -39,9 +42,17 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     plt.xlabel('Maneuver start date', fontsize=11)
     plt.ylabel('Angle difference')
     plt.title('Optimal transfer angle deviation plot')
-    plt.show()
+    plt.savefig('workingFiles/transferWindowScan.png')
+    #plt.show()
     min_idx = np.argmin(angle_matrix)
     min_angle = angle_matrix[min_idx]
+    plt.close()
+
+    image_path = "workingFiles/transferWindowScan.png"
+    results = ap.Document()
+    page = results.pages.add()
+    page.add_image(image_path, ap.Rectangle(50, 100, 550, 750, False))
+    results.save("workingFiles/TransferWindowScan.pdf")
 
     angleDifference = 0
     jd_start_val = date_julian - scanRange
@@ -171,7 +182,10 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
             sys.stdout.flush()
 
     print()
-    print("First rough sieve porkchop graph done!")
+    if porkchopNumber == 2:
+        print("Second rough sieve porkchop graph done!")
+    else:
+        print("First rough sieve porkchop graph done!")
 
     plt.figure(figsize=(10, 6))
     X, Y = np.meshgrid(utc_dates, tof_days_array)
@@ -190,5 +204,59 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
     plt.xlabel('Data startu')
     plt.ylabel('Czas lotu [dni]')
     plt.title('Porkchop plot')
-    plt.show()
+    if porkchopNumber == 1:
+        filePath = "workingFiles/porkchopPlot1.png"
+    else:
+        filePath = "workingFiles/porkchopPlot2.png"
+    plt.savefig(filePath)
+    #plt.show()
+    plt.close()
     return jd, best_tof, best_deltaV
+
+def create_Result_PDF_File (planet1name, planet2name):
+    angle_image_path = "workingFiles/transferWindowScan.png"
+    porkchopPlot1_path = "workingFiles/porkchopPlot1.png"
+    porkchopPlot2_path = "workingFiles/porkchopPlot2.png"
+    txtManDataPath = "workingFiles/manData.txt"
+    txtTWindowDataPath = "workingFiles/tWindowData.txt"
+    results = ap.Document()
+    page = results.pages.add()
+
+    head=ap.text.TextFragment(f"Transfer calculations for an interplanetary transfer from {planet1name} to {planet2name}\n")
+    head.text_state.font_size = 20
+    head.text_state.font_style = FontStyles.BOLD
+    head.position = ap.text.Position(60, 770)
+    page.paragraphs.add(head)
+
+    text1=ap.text.TextFragment("Transfer window finder graph:\n")
+    text1.position = ap.text.Position(60, 710)
+    page.paragraphs.add(text1)
+    page.add_image(angle_image_path, ap.Rectangle(60, 440, 530, 720, False))
+
+    text2 = ap.text.TextFragment("Lowest y value correspond to probable transfer window dates\n")
+    text2.position = ap.text.Position(60, 425)
+    page.paragraphs.add(text2)
+
+    with open(txtTWindowDataPath, "r", encoding="utf-8") as f:
+        content1 = f.read()
+    textTWindow = ap.text.TextFragment(content1)
+    textTWindow.position = ap.text.Position(60, 385)
+    page.paragraphs.add(textTWindow)
+
+    # Strona 2
+    page2 = results.pages.add()
+    text3 = ap.text.TextFragment("First porkchop graph:\n")
+    text3.position = ap.text.Position(60, 770)
+    page2.paragraphs.add(text3)
+    page2.add_image(porkchopPlot1_path, ap.Rectangle(60, 500, 520, 750, False))
+    text4 = ap.text.TextFragment("Second porkchop graph:\n")
+    text4.position = ap.text.Position(60, 470)
+    page2.paragraphs.add(text4)
+    page2.add_image(porkchopPlot2_path, ap.Rectangle(60, 200, 520, 450, False))
+
+    with open(txtManDataPath, "r", encoding="utf-8") as f:
+        content2 = f.read()
+    text5 = ap.text.TextFragment(content2)
+    text5.position = ap.text.Position(60, 180)
+    page2.paragraphs.add(text5)
+    results.save("results/ResultFile.pdf")
