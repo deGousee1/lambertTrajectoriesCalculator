@@ -1,4 +1,3 @@
-from astroquery.jplhorizons import Horizons
 import spiceypy as spice
 import pandas as pd
 
@@ -20,10 +19,4 @@ def get_spice_planet_vectors(planet_id: int, date: float):
         "vy": state[4],
         "vz": state[5]
     }])
-    return df
-
-def get_planet_vectors(planet_id, date):
-    obj = Horizons(id=planet_id, location ='@0', epochs=[date])
-    vectors = obj.vectors()
-    df = vectors[['datetime_str', 'x', 'y', 'z', 'vx', 'vy', 'vz']].to_pandas()
     return df

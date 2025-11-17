@@ -1,8 +1,15 @@
 import sqlite3
 import os
+import sys
 
 # Ścieżka do bazy danych
-db_path = os.path.join("db", "celestial_bodies.db")
+#db_path = os.path.join("db", "celestial_bodies.db")
+if getattr(sys, 'frozen', False):
+    base_dir = sys._MEIPASS  # folder, w którym jest .exe
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))  # folder skryptu w IDE
+
+db_path = os.path.join(base_dir, "db", "celestial_bodies.db")
 
 # Połączenie z bazą
 conn = sqlite3.connect(db_path)

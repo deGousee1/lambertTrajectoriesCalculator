@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 from aspose.pdf.text import FontStyles
 from astropy.time import Time
@@ -7,8 +8,19 @@ from lambert import get_LambertV, get_Optimal_Launch_Angle, get_Delta_V
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from utils import julian_to_utc
-
 import aspose.pdf as ap
+
+# Jeśli program jest spakowany w .exe
+if getattr(sys, 'frozen', False):
+    base_dir = sys._MEIPASS  # folder, w którym jest .exe
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))  # folder skryptu w IDE
+
+working_dir = os.path.join(base_dir, 'workingFiles')
+results_dir = os.path.join(base_dir, 'results')
+
+os.makedirs(working_dir, exist_ok=True)
+os.makedirs(results_dir, exist_ok=True)
 
 def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward):
     scanRange = Tsyn * 0.5
@@ -45,17 +57,16 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     plt.xlabel('Maneuver start date', fontsize=11)
     plt.ylabel('Angle difference [degrees]')
     plt.title('Optimal transfer angle deviation plot')
-    plt.savefig('workingFiles/transferWindowScan.png')
+
+    angle_image_path = os.path.join(working_dir, 'transferWindowScan.png')
+    plt.savefig(angle_image_path)
+    #plt.savefig('workingFiles/transferWindowScan.png')
+
     #plt.show()
     min_idx = np.argmin(angle_matrix)
     min_angle = angle_matrix[min_idx]
     plt.close()
 
-    image_path = "workingFiles/transferWindowScan.png"
-    results = ap.Document()
-    page = results.pages.add()
-    page.add_image(image_path, ap.Rectangle(50, 100, 550, 750, False))
-    results.save("workingFiles/TransferWindowScan.pdf")
 
     angleDifference = 0
     jd_start_val = date_julian - scanRange
@@ -202,7 +213,7 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
     print("Best time of flight:", best_tof, "Best launch date:", utcBestLaunch, "Best deltaV possible:", best_deltaV)
 
     deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, best_deltaV * 2)
-    plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='viridis')
+    plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='turbo')
     plt.colorbar(label='Delta-V [m/s]')
     if porkchopNumber == 2:
         plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=6))
@@ -212,21 +223,29 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
     plt.ylabel('Time of flight [days]:')
     plt.title('Porkchop plot')
     if porkchopNumber == 1:
-        filePath = "workingFiles/porkchopPlot1.png"
+        #filePath = "workingFiles/porkchopPlot1.png"
+        filePath = os.path.join(working_dir, 'porkchopPlot1.png')
     else:
-        filePath = "workingFiles/porkchopPlot2.png"
+        #filePath = "workingFiles/porkchopPlot2.png"
+        filePath = os.path.join(working_dir, 'porkchopPlot2.png')
     plt.savefig(filePath)
     #plt.show()
     plt.close()
     return jd, best_tof, best_deltaV
 
 def create_Result_PDF_File (planet1name, planet2name):
-    angle_image_path = "workingFiles/transferWindowScan.png"
-    porkchopPlot1_path = "workingFiles/porkchopPlot1.png"
-    porkchopPlot2_path = "workingFiles/porkchopPlot2.png"
-    txtManDataPath = "workingFiles/manData.txt"
-    txtTWindowDataPath = "workingFiles/tWindowData.txt"
-    logo_image_path = "workingFiles/synodicLogo.png"
+    #angle_image_path = "workingFiles/transferWindowScan.png"
+    #porkchopPlot1_path = "workingFiles/porkchopPlot1.png"
+    #porkchopPlot2_path = "workingFiles/porkchopPlot2.png"
+    #txtManDataPath = "workingFiles/manData.txt"
+    #txtTWindowDataPath = "workingFiles/tWindowData.txt"
+    #logo_image_path = "workingFiles/synodicLogo.png"
+    angle_image_path = os.path.join(working_dir, 'transferWindowScan.png')
+    porkchopPlot1_path = os.path.join(working_dir, 'porkchopPlot1.png')
+    porkchopPlot2_path = os.path.join(working_dir, 'porkchopPlot2.png')
+    txtManDataPath = os.path.join(working_dir, 'manData.txt')
+    txtTWindowDataPath = os.path.join(working_dir, 'tWindowData.txt')
+    logo_image_path = os.path.join(working_dir, 'astroScanLogo.png')
     results = ap.Document()
     page = results.pages.add()
 
@@ -272,4 +291,5 @@ def create_Result_PDF_File (planet1name, planet2name):
     page2.paragraphs.add(textTWindow)
     page2.add_image(logo_image_path, ap.Rectangle(490, 760, 570, 820, False))
 
-    results.save("results/ResultFile.pdf")
+    results_path = os.path.join(results_dir, 'ResultFile.pdf')
+    results.save(results_path)

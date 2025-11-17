@@ -4,11 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="PDF file creation as a result">
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Nicer result PDF layout, planet name error handling and some cosmetic changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ephemerides.py" beforeDir="false" afterPath="$PROJECT_DIR$/ephemerides.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/plots.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workingFiles/synodicLogo.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -390,7 +392,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763325686627</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="Nicer result PDF layout, planet name error handling and some cosmetic changes">
+      <option name="closed" value="true" />
+      <created>1763391147737</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1763391147737</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -408,7 +418,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Angle calculations added to main" />
     <MESSAGE value="SQLite database added" />
     <MESSAGE value="SQLite database shenanigans" />
     <MESSAGE value="SQLite database shenanigans v2" />
@@ -433,7 +442,8 @@
     <MESSAGE value="Created the plots class, simplified main class, deleted unnecessary code" />
     <MESSAGE value="Added min and max orbit height error handling" />
     <MESSAGE value="PDF file creation as a result" />
-    <option name="LAST_COMMIT_MESSAGE" value="PDF file creation as a result" />
+    <MESSAGE value="Nicer result PDF layout, planet name error handling and some cosmetic changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Nicer result PDF layout, planet name error handling and some cosmetic changes" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

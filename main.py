@@ -5,11 +5,36 @@ from lambert import get_ToF_estimate, get_Corrected_ToF_estimate, get_LambertV, 
 from plots import transfer_Angle_Scan, porkchop_plot, create_Result_PDF_File
 from utils import get_Clear_ToF_Time, julian_to_utc, ask_for_Entry_Data
 from ephemerides import get_spice_planet_vectors
+import os
+import sys
+import sqlite3
+
+# Jeśli program jest spakowany w .exe
+if getattr(sys, 'frozen', False):
+    base_dir = sys._MEIPASS  # folder, w którym jest .exe
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))  # folder skryptu w IDE
+
+db_path = os.path.join(base_dir, 'db', 'celestial_bodies.db')
+conn = sqlite3.connect(db_path)
+
+working_dir = os.path.join(base_dir, 'workingFiles')
+results_dir = os.path.join(base_dir, 'results')
+kernels_dir = os.path.join(base_dir, "kernels")
+
+os.makedirs(working_dir, exist_ok=True)
+os.makedirs(results_dir, exist_ok=True)
+os.makedirs(kernels_dir, exist_ok=True)
+
+spice.furnsh(os.path.join(kernels_dir, "de440.bsp"))
+spice.furnsh(os.path.join(kernels_dir, "naif0012.tls"))
+spice.furnsh(os.path.join(kernels_dir, "pck00010.tpc"))
+
 DAY = 86400
 #Wczytanie efemerydów
-spice.furnsh("kernels/de440.bsp")
-spice.furnsh("kernels/naif0012.tls")
-spice.furnsh("kernels/pck00010.tpc")
+#spice.furnsh("kernels/de440.bsp")
+#spice.furnsh("kernels/naif0012.tls")
+#spice.furnsh("kernels/pck00010.tpc")
 #Zdobycie danych wejściowych
 date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight = ask_for_Entry_Data()
 
@@ -141,18 +166,24 @@ elif angleArr>5:
     print("Warning! Slightly inefficient trajectory! The launch date may not be set during the perfect transfer window.")
 else:
     print("Good Hohmann transfer found!")
-with open('workingFiles/manData.txt', 'w') as f:
+
+manData_path = os.path.join(working_dir, 'manData.txt')
+with open(manData_path, 'w') as f:
     f.write('Maneuver data:\n')
     f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {np.round(jd,2)}\n")
     f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes\n")
     f.write(f"UTC arrival date: {arrivalDate} Julian arrival date: {np.round(JulianArrivalBest, 2)}\n")
     f.write(f"Delta V needed for transfer from {planet1name} orbit at height of {departOrbitHeight/1000 }km to {planet2name}: {np.round(departDeltaV, 1)} m/s\n")
-    f.write(f"DeltaV needed for capture at {planet2name} for an orbit height of {arrivalOrbitHeight/1000 }km: {np.round(arrivalDeltaV, 1)} m/s\n")
-    f.write(f"Ship's arrival velocity vector angle relative to the {planet1name} velocity vector at arrival: {np.round(angleArr, 1)}°\n")
-with open('workingFiles/tWindowData.txt', 'w') as f:
+    f.write(f"Delta V needed for capture at {planet2name} for an orbit height of {arrivalOrbitHeight/1000 }km: {np.round(arrivalDeltaV, 1)} m/s\n")
+    f.write(f"Ship's arrival velocity vector angle relative to the {planet2name} velocity vector at arrival: {np.round(angleArr, 1)}°\n")
+tWindowData_path = os.path.join(working_dir, 'tWindowData.txt')
+with open(tWindowData_path, 'w') as f:
     f.write('Transfer window data:\n')
     f.write(f"Best transfer window date: {utcTransferWindow}\n")
     f.write(f"Optimal transfer angle: {np.round(optimalAngle, 1)}°\n")
     f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
     f.write(f"Synodic time for a transfer from {planet1name} to {planet2name}: {np.round(Tsyn, 1)} days\n")
 create_Result_PDF_File(planet1name, planet2name)
+
+results_path = os.path.join(results_dir, 'ResultFile.pdf')
+os.startfile(results_path)
