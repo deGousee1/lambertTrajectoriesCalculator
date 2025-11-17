@@ -53,7 +53,7 @@ Tsyn=1/abs((1/get_planet_orbPeriod(planet1name) - 1/get_planet_orbPeriod(planet2
 
 #znalezienie przybliżonych okien startowych i idealnych katów do transferu
 bestAngleDateJ, bestAngle, utcTransferWindow, worstAngle, utcWorstAngleDate = transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward)
-print("Best transfer window date Julian:", bestAngleDateJ)
+#print("Best transfer window date Julian:", bestAngleDateJ)
 print("Best transfer window date:", utcTransferWindow)
 print("Best transfer window angle:", bestAngle)
 print("Worst angle date:", utcWorstAngleDate)
@@ -143,16 +143,16 @@ else:
     print("Good Hohmann transfer found!")
 with open('workingFiles/manData.txt', 'w') as f:
     f.write('Maneuver data:\n')
-    f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {jd}\n")
-    f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes {round(secsToF)} seconds\n")
-    f.write(f"UTC arrival date: {arrivalDate} Julian arrival date: {JulianArrivalBest}\n")
-    f.write(f"Delta V needed for transfer from {planet1name} orbit at height of {departOrbitHeight/1000 }km to {planet2name}:{np.round(departDeltaV, 1)} m/s\n")
+    f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {np.round(jd,2)}\n")
+    f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes\n")
+    f.write(f"UTC arrival date: {arrivalDate} Julian arrival date: {np.round(JulianArrivalBest, 2)}\n")
+    f.write(f"Delta V needed for transfer from {planet1name} orbit at height of {departOrbitHeight/1000 }km to {planet2name}: {np.round(departDeltaV, 1)} m/s\n")
     f.write(f"DeltaV needed for capture at {planet2name} for an orbit height of {arrivalOrbitHeight/1000 }km: {np.round(arrivalDeltaV, 1)} m/s\n")
-    f.write(f"Ship's arrival velocity vector angle relative to the {planet1name} velocity vector at arrival: {angleArr}°\n")
+    f.write(f"Ship's arrival velocity vector angle relative to the {planet1name} velocity vector at arrival: {np.round(angleArr, 1)}°\n")
 with open('workingFiles/tWindowData.txt', 'w') as f:
     f.write('Transfer window data:\n')
     f.write(f"Best transfer window date: {utcTransferWindow}\n")
-    f.write(f"Optimal transfer angle: {optimalAngle}\n")
+    f.write(f"Optimal transfer angle: {np.round(optimalAngle, 1)}°\n")
     f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
     f.write(f"Synodic time for a transfer from {planet1name} to {planet2name}: {np.round(Tsyn, 1)} days\n")
 create_Result_PDF_File(planet1name, planet2name)

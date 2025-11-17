@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from astropy.time import Time
 import warnings
@@ -41,22 +43,24 @@ def stumpff_S(z):
 def get_planet_id(planetname):
     if planetname == "Mercury":
         planetid = 1
-    if planetname == "Venus":
+    elif planetname == "Venus":
         planetid = 299
-    if planetname == "Earth":
+    elif planetname == "Earth":
         planetid = 399 #Można w przyszłości ustawić 3 zamiast 399 czyli barycentrum układu Ziemia-Księżyc a nie samą Ziemię
-    if planetname == "Mars":
+    elif planetname == "Mars":
         planetid = 4
-    if planetname == "Jupiter":
+    elif planetname == "Jupiter":
         planetid = 5
-    if planetname == "Saturn":
+    elif planetname == "Saturn":
         planetid = 6
-    if planetname == "Uranus":
+    elif planetname == "Uranus":
         planetid = 7
-    if planetname == "Neptune":
+    elif planetname == "Neptune":
         planetid = 8
-    if planetname == "Pluto":
-        planetid = 9
+    #elif planetname == "Pluto":
+    #    planetid = 9
+    else:
+        planetid = 10
     return planetid
 
 def ask_for_Entry_Data():
@@ -66,12 +70,49 @@ def ask_for_Entry_Data():
     planetName = input("First planet name: ")
     planet1name = planetName
     planet1id = get_planet_id(planetName)
+    if planet1id == 10:
+        print("Given planet name is incorrect. Please try again.")
+        planetName = input("First planet name: ")
+        planet1name = planetName
+        planet1id = get_planet_id(planetName)
+        if planet1id == 10:
+            print("Given planet name is incorrect. The first letter must be a capital letter. Please try again.")
+            planetName = input("First planet name: ")
+            planet1name = planetName
+            planet1id = get_planet_id(planetName)
+            if planet1id == 10:
+                print("Given planet name is incorrect. Use names from this list: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune. Please try again.")
+                planetName = input("First planet name: ")
+                planet1name = planetName
+                planet1id = get_planet_id(planetName)
+                if planet1id == 10:
+                    sys.exit()
     departOrbMin = get_planet_Min_Orb_Height(planetName)
     departOrbMax = get_planet_SOI(planetName)
 
     planetName = input("Second planet name: ")
     planet2name = planetName
     planet2id = get_planet_id(planetName)
+    if planet2id == 10:
+        print("Given planet name is incorrect. Please try again.")
+        planetName = input("Second planet name: ")
+        planet2name = planetName
+        planet2id = get_planet_id(planetName)
+        if planet2id == 10:
+            print("Given planet name is incorrect. The first letter must be a capital letter. Please try again.")
+            planetName = input("Second planet name: ")
+            planet2name = planetName
+            planet2id = get_planet_id(planetName)
+            if planet2id == 10:
+                print("Given planet name is incorrect. Use names from this list: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune. Please try again.")
+                planetName = input("Second planet name: ")
+                planet2name = planetName
+                planet2id = get_planet_id(planetName)
+                if planet2id == 10:
+                    sys.exit()
+    if planet2id == planet1id:
+        print("Both given planets are the same. Please try again.")
+        sys.exit()
     arrivalOrbMin = get_planet_Min_Orb_Height(planetName)
     arrivalOrbMax = get_planet_SOI(planetName)
 
