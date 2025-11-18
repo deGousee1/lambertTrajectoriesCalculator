@@ -163,7 +163,7 @@ print(f"Ship's arrival velocity vector angle relative to the {planet2name} veloc
 
 manData_path = os.path.join(working_dir, 'manData.txt')
 # Utworzenie opisu manewru .txt
-with open(manData_path, 'w') as f:
+with open(manData_path, 'w', encoding='utf-8') as f:
     f.write('Maneuver data:\n')
     f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {np.round(jd,2)}\n")
     f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes\n")
@@ -173,7 +173,7 @@ with open(manData_path, 'w') as f:
     f.write(f"Ship's arrival velocity vector angle relative to the {planet2name} velocity vector at arrival: {np.round(angleArr, 1)}°\n")
 tWindowData_path = os.path.join(working_dir, 'tWindowData.txt')
 # Utworzenie drugiego opisu w .txt
-with open(tWindowData_path, 'w') as f:
+with open(tWindowData_path, 'w', encoding='utf-8') as f:
     f.write('Transfer window data:\n')
     f.write(f"Transfer window date: {utcTransferWindow}\n")
     f.write(f"Optimal transfer angle: {np.round(optimalAngle, 1)}°\n")
