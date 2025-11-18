@@ -33,8 +33,8 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     angle_matrix = np.zeros(len(start_jd_array))
     for i, jd_start_val in enumerate(start_jd_array):
         jd_start_val: float = jd_start_val
-        first_v = get_spice_planet_vectors(planet1id, jd_start_val)  # Spice implemented
-        second_v = get_spice_planet_vectors(planet2id, jd_start_val)  # Spice implemented
+        first_v = get_spice_planet_vectors(planet1id, jd_start_val)
+        second_v = get_spice_planet_vectors(planet2id, jd_start_val)
 
         r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
         r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
@@ -62,6 +62,12 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     plt.savefig(angle_image_path)
     plt.close()
 
+# Funkcja notNeeded, jak sama nazwa wskazuje, obecnie do niczego nie służy, po prostu żal mi było jej usuwać
+def notNeeded(planet1id, planet2id, planet2name, correctedToFdays, outward):
+    start_jd_array = np.arange(10, 100)
+    scanRange = 1
+    scanStep = 1
+    iterationGoal = 1
     currentBestAngle = 181
     worstAngle = 0
     currentBestAngleDateJ = 0
@@ -139,6 +145,7 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     # Komentarz do całości funkcji:
     # Jak jeszcze raz przeglądam kod, zauważyłem, że mogłem to znacznie uprościć i po prostu pobrać z wykresu największą wartość.
     # Zorientowałem się dopiero po napisaniu tego wszystkiego i za dużo nad tym pracowałem żeby teraz to usunąć. I tak program szybko to wykonuje więc dla użytkownika w zasadzie nie ma różnicy.
+    # Nowy komentarz: W sumie wszystko tu jest niepotrzebne bo wystarczy zwiększyć zakresu skanu porkchopa na czas synodyczny
     return bestAngleDateJ, bestAngle, utcTransferWindow, worstAngle, utcWorstAngleDate
 
 def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber):
@@ -146,7 +153,7 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
     # Dobranie zakresu i rozdzielczości skanu zależnie od tego czy to pierwszy czy drugi skan
     if porkchopNumber == 1:
         start_jd_array = np.arange(bestAngleDateJ - scanRange, bestAngleDateJ + scanRange, scanStep)
-        tof_days_array = np.arange(correctedToFdays * 0.5, correctedToFdays + scanRange, scanStepToF)
+        tof_days_array = np.arange(correctedToFdays * 0.5, correctedToFdays * 1.5 , scanStepToF)
     else:
         start_jd_array = np.arange(bestAngleDateJ - scanRange, bestAngleDateJ + scanRange, scanStep)
         tof_days_array = np.arange(correctedToFdays - scanRange, correctedToFdays + scanRange, scanStep)

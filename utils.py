@@ -141,8 +141,8 @@ def welcomeScreenprint():
     print(r"   /   |  _____/ /__________ / ___/_________ _____ ")
     print(r"  / /| | / ___/ __/ ___/ __ \\__ \/ ___/ __ `/ __ \ ")
     print(r" / ___ |(__  ) /_/ /  / /_/ /__/ / /__/ /_/ / / / / ")
-    print(r"/_/  |_/____/\__/_/   \____/____/\___/\__,_/_/ /_/  ")
-    print(r"                                                    ")
+    print(r"/_/  |_/____/\__/_/   \____/____/\___/\__,_/_/ /_/  V.1.2")
+    print("")
 
     print(r"Welcome to AstroScan, an interplanetary transfer calculator!")
     print(r"AstroScan calculates optimal transfer windows, delta V needed for a maneuver and more.")

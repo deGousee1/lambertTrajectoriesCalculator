@@ -77,11 +77,13 @@ Tsyn=1/abs((1/get_planet_orbPeriod(planet1name) - 1/get_planet_orbPeriod(planet2
 print("-------------------------------------------")
 print("Calculating the given transfer maneuver... Please wait...")
 print("-------------------------------------------")
-#znalezienie przybliżonych okien startowych i idealnych katów do transferu
-bestAngleDateJ, bestAngle, utcTransferWindow, worstAngle, utcWorstAngleDate = transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward)
+#znalezienie przybliżonych okien startowych i idealnych katów do transferu WYŁĄCZONE DO TESTU
+#bestAngleDateJ, bestAngle, utcTransferWindow, worstAngle, utcWorstAngleDate = transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward)
+# Zachowałem fragment funkcji do stworzenia wykresu bo dobrze wyglądał i pomaga w debugowaniu i testach
+transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, correctedToFdays, outward)
 
 #określenie zakresu skanu i dokładności dla pierwszego porkchop plota
-scanRange=Tsyn*0.1
+scanRange=Tsyn*0.5
 if scanRange < 100:
     scanRange = 100
 scanStep=round(scanRange*0.05)
@@ -90,6 +92,7 @@ if scanStep < 1:
 scanStepToF = 0.01*correctedToFdays
 #pierwszy szeroki porkchop plot
 porkchopNumber = 1
+bestAngleDateJ = date_julian # Tymczasowo do odłączenia skanu okienek transferowych
 jd, best_tof, best_deltaV = porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber)
 
 # Określenie zakresu skanu i dokładności dla drugiego wykresu
@@ -175,9 +178,9 @@ tWindowData_path = os.path.join(working_dir, 'tWindowData.txt')
 # Utworzenie drugiego opisu w .txt
 with open(tWindowData_path, 'w', encoding='utf-8') as f:
     f.write('Transfer window data:\n')
-    f.write(f"Transfer window date: {utcTransferWindow}\n")
+    #f.write(f"Transfer window date: {utcTransferWindow}\n")
     f.write(f"Optimal transfer angle: {np.round(optimalAngle, 1)}°\n")
-    f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
+    #f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
     f.write(f"Synodic time for a transfer from {planet1name} to {planet2name}: {np.round(Tsyn, 1)} days\n")
 create_Result_PDF_File(planet1name, planet2name)
 
