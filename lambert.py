@@ -4,6 +4,7 @@ from ephemerides import get_spice_planet_vectors
 from utils import stumpff_C, stumpff_S
 
 def get_ToF_estimate(planet2name, r1_norm):
+    # Funkcja oblicza wstępny czas lotu na podstawie faktycznej odległości planety startowej od słońca w chwili startu i półosi wielkiej orbity planety docelowej
     planetName = planet2name
     planet2semimajor = get_planet_semimajor(planetName)
 
@@ -14,6 +15,7 @@ def get_ToF_estimate(planet2name, r1_norm):
     return estToF
 
 def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2id):
+    # Funkcja oblicza w teorii dokładniejsze przybliżenie czasu lotu na podstawie odległości planety startowej od słońca w chwili startu i odległości planety docelowej od słońca w chwili przylotu (którą mogę wyznaczyć na podstawie poprzedniego, mniej dokładnego przybliżenia)
     first_v = get_spice_planet_vectors(planet1id, date_julian)
     second_v = get_spice_planet_vectors(planet2id, JulianArrivalETA)
     r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
@@ -26,6 +28,7 @@ def get_Corrected_ToF_estimate(date_julian, JulianArrivalETA, planet1id, planet2
     return correctedToF
 
 def get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward):
+    # Funkcja oblicza optymalny kąt heliocentryczny do transferu
     planetName = planet2name
     planet2orbPeriod = float(get_planet_orbPeriod(planetName))
     omega=360/planet2orbPeriod
@@ -53,9 +56,7 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
     theta = np.arccos(np.dot(pos_origin, pos_dest) / (r1_norm * r2_norm))
     A = np.sin(theta) * np.sqrt( (r1_norm * r2_norm) / (1 - np.cos(theta)) )
     #Inicjalizacja zmiennych
-    ToFLambert = 1
     ToFLambertMid = 1
-    yz = 2
     yzMid = 2
     IterationCounter=0
     v1 = 0
@@ -63,7 +64,6 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
     short_way_done = False
     #Problem Lamberta
     while not short_way_done:
-        z=0
         z1 = 0
         z2 = 20
         while abs(correctedToF - ToFLambertMid) > 0.001:
@@ -89,12 +89,12 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
                     z1 = zMid
                 else:
                     z2 = zMid
-            else:
-                print("1:", (correctedToF - ToFLambert1), "2:", (correctedToF - ToFLambert2))
-                print("z1:", z1, "z2:", z2)
+            #else:
+                #print("1:", (correctedToF - ToFLambert1), "2:", (correctedToF - ToFLambert2))
+                #print("z1:", z1, "z2:", z2) Zakomentowany kod przydawał się wcześniej do debugowania
 
             IterationCounter += 1
-            #Obsługa błędu zbyt dużej liczby iteracji
+            # Wykrywanie zbyt dużej liczby iteracji (po zastosowaniu metody bisekcji nie powinno nigdy się aktywować, bo program znajduje parametr z w 30-35 iteracji
             if IterationCounter>1000:
                 print("Error iteration count too high")
 
@@ -105,7 +105,7 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
         gp = 1-(yzMid/r2_norm)
         v1=(1/g)*(pos_dest-(f*pos_origin))
         v2=(1/g)*(gp*pos_dest-pos_origin)
-        #Sprawdzenie czy podana trajektoria jest krótszą drogą
+        # Sprawdzenie czy podana trajektoria jest krótszą drogą
         angle = np.arccos(np.dot(v2, v_dest) / (np.linalg.norm(v2)*np.linalg.norm(v_dest)))
         if angle > np.pi/2:
             A = -A

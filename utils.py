@@ -1,14 +1,17 @@
 import sys
-
 import numpy as np
 from astropy.time import Time
 import warnings
 from db import get_planet_Min_Orb_Height, get_planet_SOI
 from erfa import ErfaWarning
-warnings.filterwarnings('ignore', category=ErfaWarning)
+warnings.filterwarnings('ignore', category=ErfaWarning) # Wyłączenie ostrzeżenia o niedokładnych danych efemerydów dla odległych dat
 
 def get_julian_date(date_str: str) -> float:
-    t=Time(date_str, scale='utc')
+    try:
+        t=Time(date_str, scale='utc')
+    except ValueError:
+        print("Wrong date format")
+        sys.exit()
     return t.jd
 
 def julian_to_utc(jd: float) -> str:
@@ -59,8 +62,9 @@ def get_planet_id(planetname):
         planetid = 8
     #elif planetname == "Pluto":
     #    planetid = 9
+    #Wyłączyłem Plutona, bo przez mocno nachyloną orbitę psuł trochę funkcję znajdywania optymalnego okna transferowego. Program mógłby wyznaczyć trajektorię na Plutona ale nie gwarantuje tego że to będzie zawsze optymalna trajektoria
     else:
-        planetid = 10
+        planetid = 10 # kod błędu
     return planetid
 
 def ask_for_Entry_Data():
@@ -118,10 +122,6 @@ def ask_for_Entry_Data():
 
     departOrbitHeight = float(input("Departure Orbit Height (km): ")) * 1000
     arrivalOrbitHeight = float(input("Arrival Orbit Height (km): ")) * 1000
-    print("Departure orbit min: ", departOrbMin)
-    print("Arrival orbit min: ", arrivalOrbMin)
-    print("Departure orbit max: ", departOrbMax)
-    print("Arrival orbit max: ", arrivalOrbMax)
     if departOrbitHeight < departOrbMin*1000:
         departOrbitHeight = departOrbMin*1000
         print("Departure orbit height too low! New valid orbit height is set to", departOrbitHeight/1000, "km.")
@@ -134,6 +134,20 @@ def ask_for_Entry_Data():
     if arrivalOrbitHeight > arrivalOrbMax*1000:
         arrivalOrbitHeight = arrivalOrbMax*1000
         print("Arrival orbit height too high! New valid orbit height is set to", arrivalOrbitHeight/1000, "km.")
-    print("Arrival orbit height: ", arrivalOrbitHeight)
-    print("Departure orbit height: ", departOrbitHeight)
     return date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight
+
+def welcomeScreenprint():
+    print(r"    ___         __            _____                ")
+    print(r"   /   |  _____/ /__________ / ___/_________ _____ ")
+    print(r"  / /| | / ___/ __/ ___/ __ \\__ \/ ___/ __ `/ __ \ ")
+    print(r" / ___ |(__  ) /_/ /  / /_/ /__/ / /__/ /_/ / / / / ")
+    print(r"/_/  |_/____/\__/_/   \____/____/\___/\__,_/_/ /_/  ")
+    print(r"                                                    ")
+
+    print(r"Welcome to AstroScan, an interplanetary transfer calculator!")
+    print(r"AstroScan calculates optimal transfer windows, delta V needed for a maneuver and more.")
+    print("-------------------------------------------")
+    print("Please enter the required data below.")
+    print("Date format: yyyy-mm-dd (e.g., 2026-02-16)")
+    print("Planet names must be spelled correctly (e.g., Venus, Earth, Mars, Jupiter)")
+    print("-------------------------------------------")

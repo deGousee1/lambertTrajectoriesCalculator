@@ -2,22 +2,13 @@ import sqlite3
 import os
 import sys
 
-# Ścieżka do bazy danych
-#db_path = os.path.join("db", "celestial_bodies.db")
 if getattr(sys, 'frozen', False):
     base_dir = sys._MEIPASS  # folder, w którym jest .exe
 else:
     base_dir = os.path.dirname(os.path.abspath(__file__))  # folder skryptu w IDE
 
+#Ścieżka do bazy danych
 db_path = os.path.join(base_dir, "db", "celestial_bodies.db")
-
-# Połączenie z bazą
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
-
-# Wczytanie wszystkich danych z tabeli
-cursor.execute("SELECT * FROM celestial_bodies")
-rows = cursor.fetchall()
 
 def get_planet_semimajor(planetName):
     conn = sqlite3.connect(db_path)
