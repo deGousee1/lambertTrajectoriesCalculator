@@ -60,8 +60,8 @@ def get_planet_id(planetname):
         planetid = 7
     elif planetname == "Neptune":
         planetid = 8
-    #elif planetname == "Pluto":
-    #    planetid = 9
+    elif planetname == "Pluto":
+        planetid = 9
     #Wyłączyłem Plutona, bo przez mocno nachyloną orbitę psuł trochę funkcję znajdywania optymalnego okna transferowego. Program mógłby wyznaczyć trajektorię na Plutona ale nie gwarantuje tego że to będzie zawsze optymalna trajektoria
     else:
         planetid = 10 # kod błędu
