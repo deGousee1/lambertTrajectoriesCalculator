@@ -49,7 +49,7 @@ def get_planet_id(planetname):
     elif planetname == "Venus":
         planetid = 299
     elif planetname == "Earth":
-        planetid = 399 #Można w przyszłości ustawić 3 zamiast 399 czyli barycentrum układu Ziemia-Księżyc a nie samą Ziemię
+        planetid = 399
     elif planetname == "Mars":
         planetid = 4
     elif planetname == "Jupiter":
@@ -62,7 +62,6 @@ def get_planet_id(planetname):
         planetid = 8
     elif planetname == "Pluto":
         planetid = 9
-    #Wyłączyłem Plutona, bo przez mocno nachyloną orbitę psuł trochę funkcję znajdywania optymalnego okna transferowego. Program mógłby wyznaczyć trajektorię na Plutona ale nie gwarantuje tego że to będzie zawsze optymalna trajektoria
     else:
         planetid = 10 # kod błędu
     return planetid
