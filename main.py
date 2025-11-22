@@ -33,7 +33,7 @@ spice.furnsh(os.path.join(kernels_dir, "pck00010.tpc"))
 welcomeScreenprint()
 
 #Zdobycie danych wejściowych
-date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight = ask_for_Entry_Data()
+date_julian, planet1name, planet1id, planet2name, planet2id, departOrbitHeight, arrivalOrbitHeight, countCapture = ask_for_Entry_Data()
 
 # Pobranie wektorów
 first_v = get_spice_planet_vectors(planet1id, date_julian)
@@ -93,14 +93,16 @@ scanStepToF = 0.01*correctedToFdays
 #pierwszy szeroki porkchop plot
 porkchopNumber = 1
 bestAngleDateJ = date_julian # Tymczasowo do odłączenia skanu okienek transferowych
-jd, best_tof, best_deltaV = porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber)
+jd, best_tof, best_deltaV = porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber, countCapture)
 
 # Określenie zakresu skanu i dokładności dla drugiego wykresu
-scanRange=20#round(scanRange*0.2)
-scanStep=1
+scanRange=scanStep #20
+scanStep=round(scanRange/20)
+if scanStep < 1:
+    scanStep = 1
 # Drugi dokładniejszy porkchop plot
 porkchopNumber = 2
-jd, best_tof, best_deltaV = porkchop_plot(scanRange, scanStep, scanStep, jd, best_tof, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber)
+jd, best_tof, best_deltaV = porkchop_plot(scanRange, scanStep, scanStep, jd, best_tof, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber, countCapture)
 utcBestLaunch = julian_to_utc(jd)
 
 first_v3 = get_spice_planet_vectors(planet1id, jd)
@@ -168,7 +170,7 @@ manData_path = os.path.join(working_dir, 'manData.txt')
 # Utworzenie opisu manewru .txt
 with open(manData_path, 'w', encoding='utf-8') as f:
     f.write('Maneuver data:\n')
-    f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {np.round(jd,2)}\n")
+    f.write(f"UTC departure date: {utcBestLaunch} Julian departure date: {np.round(jd,2)} +/- {scanStep} days\n")
     f.write(f"Time of flight: {daysToF} days {hoursToF} hours {minutesToF} minutes\n")
     f.write(f"UTC arrival date: {arrivalDate} Julian arrival date: {np.round(JulianArrivalBest, 2)}\n")
     f.write(f"Delta V needed for transfer from {planet1name} orbit at height of {departOrbitHeight/1000 }km to {planet2name}: {np.round(departDeltaV, 1)} m/s\n")
@@ -178,9 +180,7 @@ tWindowData_path = os.path.join(working_dir, 'tWindowData.txt')
 # Utworzenie drugiego opisu w .txt
 with open(tWindowData_path, 'w', encoding='utf-8') as f:
     f.write('Transfer window data:\n')
-    #f.write(f"Transfer window date: {utcTransferWindow}\n")
     f.write(f"Optimal transfer angle: {np.round(optimalAngle, 1)}°\n")
-    #f.write(f"Worst transfer angle date: {utcWorstAngleDate}\n")
     f.write(f"Synodic time for a transfer from {planet1name} to {planet2name}: {np.round(Tsyn, 1)} days\n")
 create_Result_PDF_File(planet1name, planet2name)
 

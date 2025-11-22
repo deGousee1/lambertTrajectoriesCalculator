@@ -7,7 +7,7 @@ from ephemerides import get_spice_planet_vectors
 from lambert import get_LambertV, get_Optimal_Launch_Angle, get_Delta_V
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from utils import julian_to_utc
+import matplotlib.ticker as ticker
 import aspose.pdf as ap
 
 # Jeśli program jest spakowany w .exe
@@ -46,8 +46,10 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
         angleDifference = abs(optimalAngle - realAngle)
         angle_matrix[i] = angleDifference
         angleLoopCounter += 1
+        completionPercantage = np.round(angleLoopCounter / iterationGoal * 100, 1)
         sys.stdout.write(
-            f"\rTransfer window scan progress: {angleLoopCounter} of {round(iterationGoal)}"
+            #f"\rTransfer window scan progress: {angleLoopCounter} of {round(iterationGoal)}"
+            f"\rTransfer window scan progress: {completionPercantage}%"
         )
         sys.stdout.flush()
     print()
@@ -62,93 +64,7 @@ def transfer_Angle_Scan(Tsyn, date_julian, planet1id, planet2id, planet2name, co
     plt.savefig(angle_image_path)
     plt.close()
 
-# Funkcja notNeeded, jak sama nazwa wskazuje, obecnie do niczego nie służy, po prostu żal mi było jej usuwać
-def notNeeded(planet1id, planet2id, planet2name, correctedToFdays, outward):
-    start_jd_array = np.arange(10, 100)
-    scanRange = 1
-    scanStep = 1
-    iterationGoal = 1
-    currentBestAngle = 181
-    worstAngle = 0
-    currentBestAngleDateJ = 0
-    worstAngleDateJ = 0
-    windowFound = False
-    optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
-    angleLoopCounter = 0
-
-    # Znalezienie daty w której planety są najdalej od optymalnego ustawienia (największy "spike" na poprzednim wykresie)
-    for jdDate in start_jd_array:
-        #Pobranie wektorów dla danej daty
-        first_v = get_spice_planet_vectors(planet1id, jdDate)
-        second_v = get_spice_planet_vectors(planet2id, jdDate)
-        r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
-        r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
-        v_firstA = np.array(first_v[["vx", "vy", "vz"]].iloc[0]) * 1000
-        v_secondA = np.array(second_v[["vx", "vy", "vz"]].iloc[0]) * 1000
-        r1_norm = np.linalg.norm(r_first)
-        r2_norm = np.linalg.norm(r_second)
-        # Sprawdzenie kątów między tymi wektorami i sprawdzenie jak bardzo się różnią od optymalnego kąta
-        realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
-        angleDifference = abs(optimalAngle - realAngle)
-        if optimalAngle < 100 and optimalAngle > 80:
-            if angleDifference > worstAngle:
-                velocityVectorAngle = np.arccos(
-                    np.dot(v_firstA, v_secondA) / (np.linalg.norm(v_firstA) * np.linalg.norm(v_secondA)))
-                if np.degrees(velocityVectorAngle) > 100:
-                    if angleDifference > worstAngle:
-                        worstAngle = angleDifference
-                        worstAngleDateJ = jdDate
-        else:
-            if angleDifference > worstAngle:
-                worstAngle = angleDifference
-                worstAngleDateJ = jdDate
-
-        angleLoopCounter += 1
-        sys.stdout.write(
-            f"\rTransfer window search stage one: {angleLoopCounter} of {round(iterationGoal)}"
-        )
-        sys.stdout.flush()
-    print()
-    utcWorstAngleDate = julian_to_utc(worstAngleDateJ)
-    #Ustawienie nowego zakresu skanu od daty najgorszego kąta o zasięgu czasu synodycznego
-    start_jd_array = np.arange(worstAngleDateJ, worstAngleDateJ + scanRange * 2, scanStep)
-    angleLoopCounter = 0
-    #Szukanie okna transferowego z uwzględnieniem czy lecę z planety wewnętrznej na zewnętrzną czy na odwrót
-    for jdDate in start_jd_array:
-        if windowFound == False:
-            jdDate: float = jdDate
-            first_v = get_spice_planet_vectors(planet1id, jdDate)
-            second_v = get_spice_planet_vectors(planet2id, jdDate)
-
-            r_first = np.array(first_v[["x", "y", "z"]].iloc[0]) * 1000
-            r_second = np.array(second_v[["x", "y", "z"]].iloc[0]) * 1000
-            r1_norm = np.linalg.norm(r_first)
-            r2_norm = np.linalg.norm(r_second)
-            optimalAngle = abs(get_Optimal_Launch_Angle(planet2name, correctedToFdays, outward))
-            realAngle = np.degrees(np.arccos(np.dot(r_first, r_second) / (r1_norm * r2_norm)))
-            angleDifference = abs(optimalAngle - realAngle)
-            if angleDifference < currentBestAngle:
-                currentBestAngle = angleDifference
-                currentBestAngleDateJ = jdDate
-                if outward == True:
-                    if currentBestAngle < 5:
-                        windowFound = True
-        angleLoopCounter += 1
-        sys.stdout.write(
-            f"\rTransfer window search stage two: {angleLoopCounter} of {round(iterationGoal)}"
-        )
-        sys.stdout.flush()
-    print()
-    bestAngleDateJ = currentBestAngleDateJ
-    bestAngle = currentBestAngle
-    utcTransferWindow = julian_to_utc(bestAngleDateJ)
-    # Komentarz do całości funkcji:
-    # Jak jeszcze raz przeglądam kod, zauważyłem, że mogłem to znacznie uprościć i po prostu pobrać z wykresu największą wartość.
-    # Zorientowałem się dopiero po napisaniu tego wszystkiego i za dużo nad tym pracowałem żeby teraz to usunąć. I tak program szybko to wykonuje więc dla użytkownika w zasadzie nie ma różnicy.
-    # Nowy komentarz: W sumie wszystko tu jest niepotrzebne bo wystarczy zwiększyć zakresu skanu porkchopa na czas synodyczny
-    return bestAngleDateJ, bestAngle, utcTransferWindow, worstAngle, utcWorstAngleDate
-
-def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber):
+def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFdays, planet1id, planet2id, planet1name, planet2name, departOrbitHeight, arrivalOrbitHeight, porkchopNumber, countCapture):
     # Funkcja robiąca wykres porkchop manewru i zwracająca parametry dające najniższe delta V
     # Dobranie zakresu i rozdzielczości skanu zależnie od tego czy to pierwszy czy drugi skan
     if porkchopNumber == 1:
@@ -185,11 +101,16 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
                                                       , arrivalOrbitHeight=arrivalOrbitHeight
                                                       , JulianArrivalCorrected=jd_arrival
                                                       , jd=jd_start_val)
-            deltaV = departDeltaV + arrivalDeltaV #+ arrivalDeltaV powoduje że program uwzglednia też wydajność manewru wyhamowania na orbitę. Można zakomentować jesli chce się liczyć tylko sam transfer bez hamowania
+            if countCapture == True:
+                deltaV = departDeltaV + arrivalDeltaV
+            else:
+                deltaV = departDeltaV # Dodanie arrivalDeltaV powoduje że program uwzglednia też wydajność manewru wyhamowania na orbitę
             deltaV_matrix[i, j] = deltaV
             firstLoopCounter += 1
+            completionPercantage = np.round(firstLoopCounter / iterationGoal * 100, 1)
             sys.stdout.write(
-                f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)}"
+                #f"\rPorkchop iteration progress: {firstLoopCounter} of {round(iterationGoal)} Percentage: {completionPercantage}%" # Zostawione do pracy nad programem
+                f"\rPorkchop generation progress: {completionPercantage}%"
             )
             sys.stdout.flush()
 
@@ -207,14 +128,11 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
     jd = float(start_jd_array[j_min])
     best_deltaV = deltaV_matrix[i_min, j_min]
 
-    deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, best_deltaV * 2) # Zamaskowanie za wysokich wartości delta V na wykresie.
+    deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, best_deltaV * 2) # Zamaskowanie za wysokich wartości delta V na wykresie
                                                                                 # Przez to wygląda bardziej jak prawdziwe porkchop ploty z internetu i jest bardziej czytelne
-    plt.contourf(X, Y, deltaV_matrix_masked, levels=50, cmap='turbo')
+    plt.contourf(X, Y, deltaV_matrix_masked, levels=400, cmap='turbo')
     plt.colorbar(label='Delta-V [m/s]')
-    if porkchopNumber == 2:
-        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=6))
-    else:
-        plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=1)) # Ustawienie co jaki okres czasu wyświetla się podziałka dat na porkchopie. I tak nie zawsze działa ale dla transferów Ziemia Mars już wszystko jest w porządku
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(nbins=6)) # Ustawienie co jaki okres czasu wyświetla się podziałka dat na porkchopie
     plt.xlabel('Start date')
     plt.ylabel('Time of flight [days]:')
     plt.title('Porkchop plot')
