@@ -130,12 +130,21 @@ def porkchop_plot(scanRange, scanStep, scanStepToF,bestAngleDateJ, correctedToFd
 
     deltaV_matrix_masked = np.ma.masked_greater(deltaV_matrix, best_deltaV * 2) # Zamaskowanie za wysokich wartości delta V na wykresie
                                                                                 # Przez to wygląda bardziej jak prawdziwe porkchop ploty z internetu i jest bardziej czytelne
-    plt.contourf(X, Y, deltaV_matrix_masked, levels=400, cmap='turbo')
+    plt.contourf(X, Y, deltaV_matrix_masked, levels=500, cmap='turbo')
     plt.colorbar(label='Delta-V [m/s]')
+    if porkchopNumber == 2:
+        plt.contour(X, Y, deltaV_matrix_masked, levels=50, colors="black", linewidths=0.5)
     plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(nbins=6)) # Ustawienie co jaki okres czasu wyświetla się podziałka dat na porkchopie
     plt.xlabel('Start date')
     plt.ylabel('Time of flight [days]:')
     plt.title('Porkchop plot')
+    plt.grid(True, color="black")
+    plt.scatter(utc_dates[j_min], tof_days_array[i_min],
+                s=50,
+                color='#7CFC00',
+                edgecolors='black',
+                linewidths=1,
+                zorder=10)
     if porkchopNumber == 1:
         filePath = os.path.join(working_dir, 'porkchopPlot1.png')
     else:
