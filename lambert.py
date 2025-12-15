@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from db import get_planet_semimajor, get_planet_GM, get_planet_Radius, get_planet_orbPeriod
 from ephemerides import get_spice_planet_vectors
@@ -77,6 +79,8 @@ def get_LambertV(JulianArrivalCorrected, date_julian, planet1id, planet2id, corr
 
             ToFLambert1 = (((yz1 / Cz1) ** 1.5) * Sz1 + A * np.sqrt(yz1)) / np.sqrt(sunGM)
             ToFLambert2 = (((yz2 / Cz2) ** 1.5) * Sz2 + A * np.sqrt(yz2)) / np.sqrt(sunGM)
+            if ToFLambert1 > correctedToF:
+                correctedToF = correctedToF + 10000
             iloczyn = (correctedToF - ToFLambert1) * (correctedToF - ToFLambert2)
             if iloczyn < 0:
                 zMid = (z1+z2)/2

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Deleted unnescessary code, refined the result file, added countCapture option. Console to be redesigned">
+    <list default="true" id="bff0c74b-e67c-4816-bb90-91cd40af5da8" name="Changes" comment="Nicer looking porkchop plot">
       <change afterPath="$PROJECT_DIR$/build/main/Analysis-00.toc" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/build/main/AstroScan.pkg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/build/main/EXE-00.toc" afterDir="false" />
@@ -22,7 +22,7 @@
       <change afterPath="$PROJECT_DIR$/workingFiles/tWindowData.txt" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/workingFiles/transferWindowScan.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/plots.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambert.py" beforeDir="false" afterPath="$PROJECT_DIR$/lambert.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -468,7 +468,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763828968500</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Nicer looking porkchop plot">
+      <option name="closed" value="true" />
+      <created>1764181123041</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1764181123041</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -486,7 +494,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved time of flight estimation calculations" />
     <MESSAGE value="Implemented Lambert problem solver with simple iteration type parameter Z finder (k=100)" />
     <MESSAGE value="Decently working Lambert with long way/short way interpretation and maneuver delta V looking realistic" />
     <MESSAGE value="User experience update" />
@@ -511,7 +518,8 @@
     <MESSAGE value="Transfer window finding improvement. Disconnected the useless window finder" />
     <MESSAGE value="Added Pluto" />
     <MESSAGE value="Deleted unnescessary code, refined the result file, added countCapture option. Console to be redesigned" />
-    <option name="LAST_COMMIT_MESSAGE" value="Deleted unnescessary code, refined the result file, added countCapture option. Console to be redesigned" />
+    <MESSAGE value="Nicer looking porkchop plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="Nicer looking porkchop plot" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/lambertTrajectories$Database.coverage" NAME="Database Coverage Results" MODIFIED="1760716959046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
